@@ -6,7 +6,6 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd
      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.17.xsd" changeLogId="312da568-3325-4ba4-8ea7-12f37582b2d2">
 
-    <!--     uncomment when you create some changelogs
    <includeAll path="database"/>
-   -->
+
 </databaseChangeLog>
