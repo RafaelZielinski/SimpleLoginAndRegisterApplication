@@ -1,0 +1,77 @@
+package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Repository;
+import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
+
+import java.util.Collection;
+import java.util.Map;
+
+import static java.util.Objects.requireNonNull;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.query.UserQuery.INSERT_USER_QUERY;
+
+/**
+ * @author rafek
+ * @version 1.0
+ * @licence free
+ * @since 2023}-12-22
+ */
+
+@Repository
+@RequiredArgsConstructor
+@Slf4j
+public class UserRepositoryImpl implements UserRepository<User> {
+    private final NamedParameterJdbcTemplate jdbc;
+    private final BCryptPasswordEncoder encoder;
+
+    @Override
+    public User create(User user) {
+        //first check if address email exists
+
+        KeyHolder key = new GeneratedKeyHolder();
+        SqlParameterSource parameters = getSqlParametersInsertUserSource(user);
+        jdbc.update(INSERT_USER_QUERY, parameters, key, new String[]{"id"});
+        log.info("Adding user {} ", user);
+        user.setId(requireNonNull(key.getKey()).longValue());
+
+        return user;
+    }
+
+    SqlParameterSource getSqlParametersInsertUserSource(User data) {
+        return new MapSqlParameterSource()
+                .addValues(Map.of(
+                        "firstName", data.getFirstName(),
+                        "lastName", data.getLastName(),
+                        "email", data.getEmail(),
+                        "password", encoder.encode(data.getPassword()),
+                        "age", data.getAge()));
+    }
+
+    @Override
+    public Collection<User> list(int page, int pageSize) {
+        return null;
+    }
+
+    @Override
+    public User get(Long id) {
+        return null;
+    }
+
+    @Override
+    public User update(User date) {
+        return null;
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return null;
+    }
+}
