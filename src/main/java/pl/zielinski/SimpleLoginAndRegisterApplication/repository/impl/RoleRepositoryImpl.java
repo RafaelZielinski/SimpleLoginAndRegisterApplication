@@ -2,6 +2,7 @@ package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
@@ -10,8 +11,11 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.RoleRowMapper;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
 
-import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.SELECT_ROLES_QUERY;
+import static java.util.Objects.requireNonNull;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.*;
 
 /**
  * @author rafek
@@ -57,6 +61,18 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
 
     @Override
     public void addRoleToUser(Long userId, String roleName) {
-
+        log.info("Adding role {} to user id: {} ", roleName, userId);
+        try {
+            Role role = jdbc.queryForObject(SELECT_ROLE_BY_NAME_QUERY, Map.of("roleName", roleName), new RoleRowMapper());
+            jdbc.update(INSERT_ROLE_TO_USER_QUERY, Map.of("userId", userId, "roleId", requireNonNull(role).getId()));
+        } catch (EmptyResultDataAccessException exception) {
+            log.error("No Role found by name: {} ", roleName);
+            throw new ApiException("No Role found by name: " + roleName);
+        } catch (
+                Exception exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("An error occured. Please try again");
+        }
     }
 }
+
