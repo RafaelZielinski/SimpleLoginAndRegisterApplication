@@ -33,4 +33,9 @@ public class RoleServiceImpl implements RoleService {
     public Collection<RoleDTO> getRoles() {
         return (repository.list().stream().map(RoleDTOMapper::fromRole).collect(Collectors.toList()));
     }
+
+    @Override
+    public RoleDTO getRoleById(Long id) {
+        return RoleDTOMapper.fromRole(repository.get(id));
+    }
 }

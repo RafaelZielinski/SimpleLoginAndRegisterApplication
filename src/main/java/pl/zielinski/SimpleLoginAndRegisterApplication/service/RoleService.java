@@ -14,4 +14,6 @@ public interface RoleService {
     RoleDTO getRoleByUserId(Long id);
 
     Collection<RoleDTO> getRoles();
+
+    RoleDTO getRoleById(Long id);
 }
