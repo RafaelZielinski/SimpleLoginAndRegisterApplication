@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.HttpResponse;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.RoleService;
 
@@ -19,7 +20,7 @@ import java.util.Map;
  * @licence ask rafekzielinski@wp.pl
  * @since 03/01/2024
  */
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/roles")
 public class RoleController {
