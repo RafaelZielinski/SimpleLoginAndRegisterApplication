@@ -14,7 +14,7 @@ public interface UserRepository<T extends User> {
     T create(T data);
     Collection<T> list(int page, int pageSize);
     T get(Long id);
-    T update(T date);
+    T update(T data);
 
     User getUserByEmail(String email);
 
