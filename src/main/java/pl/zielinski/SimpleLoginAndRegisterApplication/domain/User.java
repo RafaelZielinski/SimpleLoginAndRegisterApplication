@@ -1,10 +1,8 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
@@ -20,12 +18,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@SuperBuilder
+@ToString
 public class User {
     Long id;
     String firstName;
     String lastName;
     String email;
-    String age;
+    Long age;
     String password;
     Boolean enabled;
     Boolean isNotLocked;
