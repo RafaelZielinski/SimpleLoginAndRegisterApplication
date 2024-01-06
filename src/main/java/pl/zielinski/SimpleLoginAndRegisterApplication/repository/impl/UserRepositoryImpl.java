@@ -2,6 +2,7 @@ package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -10,13 +11,15 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
+import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
 
 import java.util.Collection;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
-import static pl.zielinski.SimpleLoginAndRegisterApplication.query.UserQuery.INSERT_USER_QUERY;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.query.UserQuery.*;
 
 /**
  * @author rafek
@@ -41,11 +44,10 @@ public class UserRepositoryImpl implements UserRepository<User> {
         jdbc.update(INSERT_USER_QUERY, parameters, key, new String[]{"id"});
         log.info("Adding user {} ", user);
         user.setId(requireNonNull(key.getKey()).longValue());
-
         return user;
     }
 
-    SqlParameterSource getSqlParametersInsertUserSource(User data) {
+    private SqlParameterSource getSqlParametersInsertUserSource(User data) {
         return new MapSqlParameterSource()
                 .addValues(Map.of(
                         "firstName", data.getFirstName(),
@@ -55,6 +57,7 @@ public class UserRepositoryImpl implements UserRepository<User> {
                         "age", data.getAge()));
     }
 
+    // I have to think about whether to write code or not like JPA class with method of Page class
     @Override
     public Collection<User> list(int page, int pageSize) {
         return null;
@@ -62,16 +65,53 @@ public class UserRepositoryImpl implements UserRepository<User> {
 
     @Override
     public User get(Long id) {
-        return null;
+        try {
+            return jdbc.queryForObject(SELECT_USER_BY_ID_QUERY, Map.of("id", id), new UserRowMapper());
+        }catch (EmptyResultDataAccessException exception) {
+            log.error("There is no such user with id {}", id);
+            throw new ApiException("There is no such an user at database exists");
+        }catch (Exception exception) {
+            log.error("An a problem occured");
+            throw new ApiException("An error occured");
+        }
     }
 
     @Override
-    public User update(User date) {
-        return null;
+    public User update(User data) {
+        try {
+           jdbc.update(UPDATE_USER_DATA_QUERY, getSqlParametersUpdateUserSource(data));
+           return get(data.getId());
+        }
+        catch (EmptyResultDataAccessException exception) {
+            throw new ApiException("No user found by id: " + data.getId());
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("An error occurred. Please try again.");
+        }
+
     }
+
+    private  SqlParameterSource getSqlParametersUpdateUserSource(User data) {
+            return new MapSqlParameterSource()
+                    .addValues(Map.of(
+                            "id", data.getId(),
+                            "firstName", data.getFirstName(),
+                            "lastName", data.getLastName(),
+                            "email", data.getEmail(),
+                            "password", encoder.encode(data.getPassword()),
+                            "age", data.getAge()));
+        }
 
     @Override
     public User getUserByEmail(String email) {
-        return null;
+        try {
+            return jdbc.queryForObject(SELECT_USER_BY_EMAIL_QUERY, Map.of("email", email), new UserRowMapper());
+        }catch (EmptyResultDataAccessException exception) {
+            log.error("There is no such user with email {}", email);
+            throw new ApiException("There is no such an user at Database exists");
+        }catch (Exception exception) {
+            log.error("An a problem occured");
+            throw new ApiException("An error occured");
+        }
     }
 }
