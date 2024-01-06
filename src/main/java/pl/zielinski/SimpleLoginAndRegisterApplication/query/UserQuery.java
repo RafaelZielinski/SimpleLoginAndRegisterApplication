@@ -8,4 +8,6 @@ package pl.zielinski.SimpleLoginAndRegisterApplication.query;
  */
 public class UserQuery {
     public static final String INSERT_USER_QUERY = "INSERT INTO Users (first_name, last_name, email, password, age) VALUES(:firstName, :lastName, :email, :password, :age)";
+    public static final String SELECT_USER_BY_ID_QUERY = "SELECT * FROM Users WHERE id = :id;";
+    public static final String SELECT_USER_BY_EMAIL_QUERY = "SELECT * FROM Users WHERE email = :email;";
 }
