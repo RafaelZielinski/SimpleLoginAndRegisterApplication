@@ -57,10 +57,14 @@ public class UserRepositoryImpl implements UserRepository<User> {
                         "age", data.getAge()));
     }
 
-    // I have to think about whether to write code or not like JPA class with method of Page class
     @Override
-    public Collection<User> list(int page, int pageSize) {
-        return null;
+    public Collection<User> list() {
+        try {
+            return jdbc.query(SELECT_USERS_QUERY, new UserRowMapper());
+        }catch (Exception exception) {
+            log.error("There is problem with derriving users from database");
+            throw new ApiException("There is problem with list of users from database");
+        }
     }
 
     @Override
