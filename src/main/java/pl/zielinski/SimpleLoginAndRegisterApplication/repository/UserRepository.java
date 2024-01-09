@@ -12,7 +12,7 @@ import java.util.Collection;
  */
 public interface UserRepository<T extends User> {
     T create(T data);
-    Collection<T> list(int page, int pageSize);
+    Collection<T> list();
     T get(Long id);
     T update(T data);
 
