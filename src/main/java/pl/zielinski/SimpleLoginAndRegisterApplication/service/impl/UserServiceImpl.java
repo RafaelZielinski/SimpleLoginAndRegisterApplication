@@ -8,6 +8,8 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMapper;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
 
+import java.util.Collection;
+
 /**
  * @author rafek
  * @version 1.0
@@ -17,7 +19,13 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
     private final UserRepository<User> userRepository;
+
+    @Override
+    public Collection<UserDTO> getUsers() {
+        return (userRepository.list().stream().map(UserDTOMapper::fromUser).toList());
+    }
 
     @Override
     public UserDTO createUser(User user) {
@@ -32,5 +40,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO updateUserData(User user) {
         return UserDTOMapper.fromUser(userRepository.update(user));
+    }
+
+    @Override
+    public UserDTO getUser(Long id) {
+        return UserDTOMapper.fromUser(userRepository.get(id));
     }
 }
