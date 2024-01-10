@@ -1,5 +1,8 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 /**
@@ -9,6 +12,8 @@ import java.time.LocalDateTime;
  * @since 02/01/2024
  */
 
+@Getter
+@Setter
 public class UserDTO{
         Long id;
         String firstName;

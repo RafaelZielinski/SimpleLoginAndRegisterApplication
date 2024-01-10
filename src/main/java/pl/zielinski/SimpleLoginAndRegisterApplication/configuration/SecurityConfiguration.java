@@ -10,6 +10,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import pl.zielinski.SimpleLoginAndRegisterApplication.handler.CustomAccessDeniedHandler;
+import pl.zielinski.SimpleLoginAndRegisterApplication.handler.CustomAuthenticationEntryPoint;
 
 
 /**
@@ -24,8 +26,13 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.exceptionHandling((exceptionalHandler) -> exceptionalHandler
+                .accessDeniedHandler(customAccessDeniedHandler).authenticationEntryPoint(customAuthenticationEntryPoint));
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(Customizer.withDefaults());
         http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -33,7 +40,7 @@ public class SecurityConfiguration {
                 .requestMatchers("/**").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/**").hasAnyAuthority("DELETE:USER")
                 .anyRequest().authenticated());
-                return http.build();
+        return http.build();
     }
 
 }
