@@ -80,5 +80,20 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
             throw new ApiException("An error occured. Please try again");
         }
     }
+
+    @Override
+    public Role getRoleByUserId(Long userId) {
+        log.info("Fetching role for user id: {} ", userId);
+        try {
+            return jdbc.queryForObject(SELECT_ROLE_BY_USER_ID, Map.of("id", userId), new RoleRowMapper());
+        }catch(EmptyResultDataAccessException exception) {
+            log.error(exception.getMessage());
+            //repair that
+            throw new ApiException("No role found by name:  ROLE_USER.name() ");
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("An error occured, Please try again");
+        }
+    }
 }
 
