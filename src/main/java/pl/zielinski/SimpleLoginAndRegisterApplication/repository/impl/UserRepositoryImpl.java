@@ -8,10 +8,16 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
+import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.domain.UserPrincipal;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
+import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
 
@@ -31,9 +37,22 @@ import static pl.zielinski.SimpleLoginAndRegisterApplication.query.UserQuery.*;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class UserRepositoryImpl implements UserRepository<User> {
+public class UserRepositoryImpl implements UserRepository<User>, UserDetailsService {
     private final NamedParameterJdbcTemplate jdbc;
     private final BCryptPasswordEncoder encoder;
+    private final RoleRepository<Role> roleRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = getUserByEmail(email);
+        if(user == null) {
+            log.error("User not found in the database");
+            throw new UsernameNotFoundException("User not found exception");
+        } else {
+            log.info("User found in database : {} ", email);
+            return new UserPrincipal(user, roleRepository.get(user.getId()));
+        }
+    }
 
     @Override
     public User create(User user) {
