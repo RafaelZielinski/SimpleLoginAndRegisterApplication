@@ -23,19 +23,19 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @ToString
 public class User {
-    Long id;
+    private Long id;
     @NotEmpty(message = "First name can not be empty")
-    String firstName;
+    private String firstName;
     @NotEmpty(message = "Last name can not be empty")
-    String lastName;
+    private String lastName;
     @NotEmpty(message = "Email can not be empty")
     @Email(message = "Invalid email. Please enter a valid email address")
-    String email;
-    Long age;
+    private String email;
+    private Long age;
     @NotEmpty(message = "Password name can not be empty")
-    String password;
-    Boolean enabled;
-    Boolean isNotLocked;
-    Boolean isUsingMfa;
-    LocalDateTime createdAt;
+    private String password;
+    private Boolean enabled;
+    private Boolean isNotLocked;
+    private Boolean isUsingMfa;
+    private LocalDateTime createdAt;
 }
