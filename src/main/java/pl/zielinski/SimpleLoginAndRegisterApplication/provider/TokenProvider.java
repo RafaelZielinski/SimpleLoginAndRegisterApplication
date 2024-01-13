@@ -88,9 +88,9 @@ public class TokenProvider {
         return usernamePasswordAuthenticationToken;
     }
 
-    public boolean isTokenValid(String email, String token) {
+    public boolean isTokenValid(Long id, String token) {
         JWTVerifier verifier = getJWTVerifier();
-        return !Objects.isNull(email) && !isTokenExpired(verifier, token);
+        return !Objects.isNull(id) && !isTokenExpired(verifier, token);
     }
 
     public boolean isTokenExpired(JWTVerifier verifier, String token) {
