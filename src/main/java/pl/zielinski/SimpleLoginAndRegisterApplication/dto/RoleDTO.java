@@ -1,8 +1,6 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 /**
  * @author rafek
@@ -12,7 +10,8 @@ import lombok.ToString;
  */
 @Getter
 @Setter
-
+@NoArgsConstructor
+@AllArgsConstructor
 public class RoleDTO {
         Long id;
         String name;
