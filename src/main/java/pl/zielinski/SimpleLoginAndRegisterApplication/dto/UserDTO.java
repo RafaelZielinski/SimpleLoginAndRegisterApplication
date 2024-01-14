@@ -1,7 +1,6 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -14,14 +13,19 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class UserDTO{
-        Long id;
-        String firstName;
-        String lastName;
-        String email;
-        String age;
-        Boolean enabled;
-        Boolean isNotLocked;
-        Boolean isUsingMfa;
-        LocalDateTime createdAt;
+        private Long id;
+        private String firstName;
+        private String lastName;
+        private String email;
+        private String age;
+        private Boolean enabled;
+        private Boolean isNotLocked;
+        private Boolean isUsingMfa;
+        private LocalDateTime createdAt;
+        private String roleName;
+        private String permissions;
         }
