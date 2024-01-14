@@ -60,20 +60,20 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         }
         }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return request.getHeader(AUTHORIZATION) == null ||
+                !request.getHeader(AUTHORIZATION).startsWith(TOKEN_PREFIX) ||
+                request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD) ||
+                asList(PUBLIC_ROUTES).contains(request.getRequestURI());
+
+    }
+
     private String getToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(AUTHORIZATION))
                 .filter(header -> header.startsWith(TOKEN_PREFIX))
                 .map(token -> token.replace(TOKEN_PREFIX, EMPTY)).get();
     }
-
-    @Override
-        protected boolean shouldNotFilter (HttpServletRequest request) throws ServletException {
-            return request.getHeader(AUTHORIZATION) == null ||
-                    !request.getHeader(AUTHORIZATION).startsWith(TOKEN_PREFIX) ||
-                    request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD) ||
-                    asList(PUBLIC_ROUTES).contains(request.getRequestURI());
-
-        }
 
     private Long getUserId(HttpServletRequest request) {
         return tokenProvider.getSubject(getToken(request), request);

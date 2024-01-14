@@ -15,6 +15,11 @@ public class RoleDTOMapper {
         RoleDTO roleDTOMapper = new RoleDTO();
         BeanUtils.copyProperties(role, roleDTOMapper);
         return roleDTOMapper;
+    }
 
+    public static Role toRole(RoleDTO roleDTO) {
+        Role role = new Role();
+        BeanUtils.copyProperties(roleDTO, role);
+        return role;
     }
 }

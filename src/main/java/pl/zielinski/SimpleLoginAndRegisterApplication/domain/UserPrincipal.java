@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
+
+import static pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMapper.fromUser;
 
 /**
  * @author rafek
@@ -59,5 +62,9 @@ public class UserPrincipal implements UserDetails {
 
     public Long getId() {
         return user.getId();
+    }
+
+    public UserDTO getUserDTO() {
+        return fromUser(user, role);
     }
 }
