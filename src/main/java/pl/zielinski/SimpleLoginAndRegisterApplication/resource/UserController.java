@@ -25,7 +25,7 @@ import static pl.zielinski.SimpleLoginAndRegisterApplication.mapper.RoleDTOMappe
 import static pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMapper.toUser;
 
 @RestController
-@RequestMapping("users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
