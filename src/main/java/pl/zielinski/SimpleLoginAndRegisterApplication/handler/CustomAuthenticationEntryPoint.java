@@ -29,8 +29,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         HttpResponse httpResponse = HttpResponse.builder()
                 .timeStamp(LocalDateTime.now().toString())
                 .reason("You don't have enough permission")
-                .status(HttpStatus.FORBIDDEN)
-                .statusCode(HttpStatus.FORBIDDEN.value())
+                .status(HttpStatus.UNAUTHORIZED)
+                .statusCode(HttpStatus.UNAUTHORIZED.value())
                 .build();
 
         response.setContentType(APPLICATION_JSON_VALUE);
