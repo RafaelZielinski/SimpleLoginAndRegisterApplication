@@ -61,8 +61,8 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         KeyHolder key = new GeneratedKeyHolder();
         SqlParameterSource parameters = getSqlParametersInsertUserSource(user);
         jdbc.update(INSERT_USER_QUERY, parameters, key, new String[]{"id"});
-        log.info("Adding user {} ", user);
         user.setId(requireNonNull(key.getKey()).longValue());
+        log.info("Adding user {} ", user);
         return user;
     }
 
