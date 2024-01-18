@@ -37,22 +37,14 @@ public class SecurityConfiguration {
 
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder encoder;
     private final CustomAuthorizationFilter customAuthorizationFilter;
-    private final UserDetailsService userDetailsService;
 
     private final String[] PUBLIC_ROUTES = {
             "/users/login/**",
             "/users/register/**"
     };
-
-    @Bean
-    AuthenticationManager authenticationManager() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setPasswordEncoder(encoder);
-        authProvider.setUserDetailsService(userDetailsService);
-        return new ProviderManager(authProvider);
-    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -67,6 +59,16 @@ public class SecurityConfiguration {
                 .accessDeniedHandler(customAccessDeniedHandler).authenticationEntryPoint(customAuthenticationEntryPoint));
         http.addFilterBefore(customAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+
+
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(encoder);
+        return new ProviderManager(authProvider);
     }
 
 }
