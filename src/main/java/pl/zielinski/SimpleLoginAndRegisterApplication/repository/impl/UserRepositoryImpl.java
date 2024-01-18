@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleType.ROLE_USER;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.query.UserQuery.*;
 
 /**
@@ -43,6 +44,24 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     private final RoleRepository<Role> roleRepository;
 
     @Override
+    public User create(User user) {
+       if(getEmailCount(user.getEmail()) > 0) {
+           throw new ApiException("There is already taken that email");
+       }
+
+        KeyHolder key = new GeneratedKeyHolder();
+        SqlParameterSource parameters = getSqlParametersInsertUserSource(user);
+        jdbc.update(INSERT_USER_QUERY, parameters, key, new String[]{"id"});
+        user.setId(requireNonNull(key.getKey()).longValue());
+        log.info("Adding user {} ", user);
+        roleRepository.addRoleToUser(user.getId(), ROLE_USER.name() );
+        //for now there is no mechanism of sending activation link to email
+        user.setEnabled(true);
+        user.setNotLocked(true);
+        return user;
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = getUserByEmail(email);
         if(user == null) {
@@ -54,16 +73,8 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         }
     }
 
-    @Override
-    public User create(User user) {
-        //first check if address email exists
-
-        KeyHolder key = new GeneratedKeyHolder();
-        SqlParameterSource parameters = getSqlParametersInsertUserSource(user);
-        jdbc.update(INSERT_USER_QUERY, parameters, key, new String[]{"id"});
-        user.setId(requireNonNull(key.getKey()).longValue());
-        log.info("Adding user {} ", user);
-        return user;
+    private Integer getEmailCount(String email) {
+        return jdbc.queryForObject(COUNT_USER_EMAIL_QUERY, Map.of("email", email), Integer.class);
     }
 
     private SqlParameterSource getSqlParametersInsertUserSource(User data) {
@@ -127,6 +138,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
 
     @Override
     public User getUserByEmail(String email) {
+        log.info(email);
         try {
             return jdbc.queryForObject(SELECT_USER_BY_EMAIL_QUERY, Map.of("email", email), new UserRowMapper());
         }catch (EmptyResultDataAccessException exception) {
