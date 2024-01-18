@@ -12,9 +12,10 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.domain.HttpResponse;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.runtime.ObjectMethods;
 import java.time.LocalDateTime;
 
+import static java.time.LocalDateTime.*;
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
@@ -28,13 +29,13 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
         HttpResponse httpResponse = HttpResponse.builder()
-                .timeStamp(LocalDateTime.now().toString())
+                .timeStamp(now().toString())
                 .reason("You don't have enough permission")
-                .status(HttpStatus.FORBIDDEN)
-                .statusCode(HttpStatus.FORBIDDEN.value())
+                .status(FORBIDDEN)
+                .statusCode(FORBIDDEN.value())
                 .build();
         response.setContentType(APPLICATION_JSON_VALUE);
-        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setStatus(FORBIDDEN.value());
         OutputStream out = response.getOutputStream();
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(out, httpResponse);
