@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static java.lang.System.*;
+import static java.util.Arrays.*;
+
 /**
  * @author rafek
  * @version 1.0
@@ -34,7 +37,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class TokenProvider {
-    @Value(value = "${jwt.secret")
+    @Value("${jwt.secret}")
     private String secret;
     private static final long REFRESH_TOKEN_EXPIRATION_TIME = 432_000_000;
     private static final String CUSTOMER_OF_MY_SERVICES = "CUSTOMERS_OF_MY_PROJECT_WRITE_BY_RAFEK";
@@ -45,21 +48,16 @@ public class TokenProvider {
     private final UserService userService;
 
     public String createAccessToken(UserPrincipal userPrincipal) {
-        return JWT.create().withIssuer(RAFAEL_ZIELINSKI_AKA_RAFEK)
-                .withAudience(CUSTOMER_OF_MY_SERVICES)
-                .withIssuedAt(new Date())
-                .withSubject(String.valueOf(userPrincipal.getId()))
-                .withArrayClaim(AUTHORITIES, getClaimsFromUser(userPrincipal))
-                .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
+        return JWT.create().withIssuer(RAFAEL_ZIELINSKI_AKA_RAFEK).withAudience(CUSTOMER_OF_MY_SERVICES)
+                .withIssuedAt(new Date()).withSubject(String.valueOf(userPrincipal.getUserDTO().getId())).withArrayClaim(AUTHORITIES, getClaimsFromUser(userPrincipal))
+                .withExpiresAt(new Date(currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
                 .sign(Algorithm.HMAC512(secret.getBytes()));
     }
 
     public String createRefreshToken(UserPrincipal userPrincipal) {
-        return JWT.create().withIssuer(RAFAEL_ZIELINSKI_AKA_RAFEK)
-                .withAudience(CUSTOMER_OF_MY_SERVICES)
-                .withIssuedAt(new Date())
-                .withSubject(String.valueOf(userPrincipal.getId()))
-                .withExpiresAt(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
+        return JWT.create().withIssuer(RAFAEL_ZIELINSKI_AKA_RAFEK).withAudience(CUSTOMER_OF_MY_SERVICES)
+                .withIssuedAt(new Date()).withSubject(String.valueOf(userPrincipal.getUserDTO().getId()))
+                .withExpiresAt(new Date(currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
                 .sign(Algorithm.HMAC512(secret.getBytes()));
     }
 
@@ -79,7 +77,7 @@ public class TokenProvider {
 
     public List<GrantedAuthority> getAuthorities(String token) {
         String[] claims = getClaimsFromToken(token);
-        return Arrays.stream(claims).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        return stream(claims).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
 
     public Authentication getAuthentication(Long userId, List<GrantedAuthority> authorities, HttpServletRequest request) {
@@ -88,12 +86,12 @@ public class TokenProvider {
         return usernamePasswordAuthenticationToken;
     }
 
-    public boolean isTokenValid(Long id, String token) {
+    public boolean isTokenValid(Long userId, String token) {
         JWTVerifier verifier = getJWTVerifier();
-        return !Objects.isNull(id) && !isTokenExpired(verifier, token);
+        return !Objects.isNull(userId) && !isTokenExpired(verifier, token);
     }
 
-    public boolean isTokenExpired(JWTVerifier verifier, String token) {
+    private boolean isTokenExpired(JWTVerifier verifier, String token) {
         Date expiration = verifier.verify(token).getExpiresAt();
         return expiration.before(new Date());
     }
@@ -117,6 +115,4 @@ public class TokenProvider {
     private String[] getClaimsFromUser(UserPrincipal userPrincipal) {
         return userPrincipal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(String[]::new);
     }
-
-
 }
