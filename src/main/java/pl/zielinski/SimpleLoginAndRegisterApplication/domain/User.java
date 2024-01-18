@@ -14,14 +14,11 @@ import java.time.LocalDateTime;
  * @licence free
  * @since 2023}-12-22
  */
-
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 @SuperBuilder
-@ToString
 public class User {
     private Long id;
     @NotEmpty(message = "First name can not be empty")
@@ -34,8 +31,8 @@ public class User {
     private Long age;
     @NotEmpty(message = "Password name can not be empty")
     private String password;
-    private Boolean enabled;
-    private Boolean isNotLocked;
-    private Boolean isUsingMfa;
+    private boolean enabled;
+    private boolean isNotLocked;
+    private boolean isUsingMfa;
     private LocalDateTime createdAt;
 }
