@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 
+import static java.time.LocalDateTime.*;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
@@ -24,22 +26,21 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Component
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+        System.out.println(authException.toString());
         HttpResponse httpResponse = HttpResponse.builder()
-                .timeStamp(LocalDateTime.now().toString())
-                .reason("You don't have enough permission")
-                .status(HttpStatus.UNAUTHORIZED)
-                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                .timeStamp(now().toString())
+                .reason("You need to log in to access this resource")
+                .status(UNAUTHORIZED)
+                .statusCode(UNAUTHORIZED.value())
                 .build();
-
         response.setContentType(APPLICATION_JSON_VALUE);
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-
+        response.setStatus(UNAUTHORIZED.value());
         OutputStream out = response.getOutputStream();
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(out, httpResponse);
         out.flush();
-
     }
 }
