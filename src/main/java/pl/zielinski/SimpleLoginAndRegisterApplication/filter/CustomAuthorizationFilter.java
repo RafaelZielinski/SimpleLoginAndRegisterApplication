@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
+import static java.util.Optional.*;
 
 /**
  * @author rafek
@@ -37,8 +38,8 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     private final String HTTP_OPTIONS_METHOD = "OPTIONS";
     private final String EMPTY = "'";
     private final String[] PUBLIC_ROUTES = {
-            "/user/login/**",
-            "/user/register/**"
+            "/users/login/**",
+            "/users/register/**"
     };
 
     @Override
@@ -46,7 +47,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         try {
             String token = getToken(request);
             Long userId = getUserId(request);
-            if(tokenProvider.isTokenValid(userId, token)) {
+            if (tokenProvider.isTokenValid(userId, token)) {
                 List<GrantedAuthority> authorities = tokenProvider.getAuthorities(token);
                 Authentication authentication = tokenProvider.getAuthentication(userId, authorities, request);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -54,11 +55,11 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.clearContext();
             }
             filterChain.doFilter(request, response);
-        }catch(Exception exception) {
+        } catch (Exception exception) {
             log.error(exception.getMessage());
             throw new ApiException("Error");
         }
-        }
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
@@ -66,11 +67,10 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                 !request.getHeader(AUTHORIZATION).startsWith(TOKEN_PREFIX) ||
                 request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD) ||
                 asList(PUBLIC_ROUTES).contains(request.getRequestURI());
-
     }
 
     private String getToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(AUTHORIZATION))
+        return ofNullable(request.getHeader(AUTHORIZATION))
                 .filter(header -> header.startsWith(TOKEN_PREFIX))
                 .map(token -> token.replace(TOKEN_PREFIX, EMPTY)).get();
     }
