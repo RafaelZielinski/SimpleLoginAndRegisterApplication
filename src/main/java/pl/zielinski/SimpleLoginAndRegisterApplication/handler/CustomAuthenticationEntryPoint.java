@@ -29,7 +29,6 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        System.out.println(authException.toString());
         HttpResponse httpResponse = HttpResponse.builder()
                 .timeStamp(now().toString())
                 .reason("You need to log in to access this resource")
