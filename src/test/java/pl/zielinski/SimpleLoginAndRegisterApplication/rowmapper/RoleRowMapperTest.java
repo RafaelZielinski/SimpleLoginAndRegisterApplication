@@ -35,7 +35,7 @@ class RoleRowMapperTest {
         Role role = roleRowMapper.mapRow(resultSet, 1);
 
         assertEquals(role.getId(), 1L);
-        assertEquals(role.getName(), "ROLE_USER");
+        assertEquals(role.getName(), "ROLE_ USER");
         assertEquals(role.getPermission(), "READ:USER,READ:CUSTOMER");
     }
 
