@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleType.ROLE_USER;
 
 /**
  * @author rafek
@@ -133,5 +134,49 @@ class RoleRepositoryImplTest {
 
         //then
         assertEquals("An error occurred. Please try again", actual.getMessage());
+    }
+
+    //testing method getRoleByUserId(Long id)
+    @Test
+    void it_should_return_role() {
+        //given
+        long id = 1L;
+        Role expected = new Role(id, "ROLE_USER", "READ:USER,READ:CUSTOMER");
+        when(jdbcTemplate.queryForObject(Mockito.anyString(), Mockito.anyMap(), Mockito.any(RoleRowMapper.class)))
+                .thenReturn(expected);
+        //when
+        Role actual = roleRepository.getRoleByUserId(id);
+        //then
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getName(), actual.getName());
+        assertEquals(expected.getPermission(), actual.getPermission());
+    }
+
+    //testing method getRoleByUserId(Long id)
+    @Test
+    void it_should_throw_empty_result_data_exception() {
+
+        //given
+        when(jdbcTemplate.queryForObject(Mockito.anyString(), Mockito.anyMap(), Mockito.any(RoleRowMapper.class)))
+                .thenThrow(EmptyResultDataAccessException.class);
+        //when
+        Exception actual = assertThrows(ApiException.class, () -> roleRepository.getRoleByUserId(1L));
+        //then
+        assertEquals("No role found by name: " + ROLE_USER.name(), actual.getMessage());
+
+    }
+
+    //testing method getRoleByUserId(Long id)
+    @Test
+    void it_should_throw_main_exception_in_getRoleByUserId() {
+
+        //given
+        when(jdbcTemplate.queryForObject(Mockito.anyString(), Mockito.anyMap(), Mockito.any(RoleRowMapper.class)))
+                .thenThrow(ApiException.class);
+        //when
+        Exception actual = assertThrows(ApiException.class, () -> roleRepository.getRoleByUserId(1L));
+        //then
+        assertEquals("An error occurred. Please try again", actual.getMessage());
+
     }
 }
