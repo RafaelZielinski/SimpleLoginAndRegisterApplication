@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleType.ROLE_USER;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.*;
 
 /**
@@ -89,10 +90,10 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
         }catch(EmptyResultDataAccessException exception) {
             log.error(exception.getMessage());
             //repair that
-            throw new ApiException("No role found by name:  ROLE_USER.name() ");
+            throw new ApiException("No role found by name: " + ROLE_USER.name());
         } catch (Exception exception) {
             log.error(exception.getMessage());
-            throw new ApiException("An error occured, Please try again");
+            throw new ApiException("An error occurred. Please try again");
         }
     }
 }
