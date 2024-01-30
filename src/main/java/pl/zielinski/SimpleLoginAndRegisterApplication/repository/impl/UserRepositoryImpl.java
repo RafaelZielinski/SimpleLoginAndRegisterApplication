@@ -45,16 +45,16 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
 
     @Override
     public User create(User user) {
-       if(getEmailCount(user.getEmail()) > 0) {
-           throw new ApiException("There is already taken that email");
-       }
+        if (getEmailCount(user.getEmail()) > 0) {
+            throw new ApiException("There is already taken that email");
+        }
 
         KeyHolder key = new GeneratedKeyHolder();
         SqlParameterSource parameters = getSqlParametersInsertUserSource(user);
         jdbc.update(INSERT_USER_QUERY, parameters, key, new String[]{"id"});
         user.setId(requireNonNull(key.getKey()).longValue());
         log.info("Adding user {} ", user);
-        roleRepository.addRoleToUser(user.getId(), ROLE_USER.name() );
+        roleRepository.addRoleToUser(user.getId(), ROLE_USER.name());
         //for now there is no mechanism of sending activation link to email
         user.setEnabled(true);
         user.setNotLocked(true);
@@ -64,7 +64,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = getUserByEmail(email);
-        if(user == null) {
+        if (user == null) {
             log.error("User not found in the database");
             throw new UsernameNotFoundException("User not found exception");
         } else {
@@ -91,7 +91,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     public Collection<User> list() {
         try {
             return jdbc.query(SELECT_USERS_QUERY, new UserRowMapper());
-        }catch (Exception exception) {
+        } catch (Exception exception) {
             log.error("There is problem with derriving users from database");
             throw new ApiException("There is problem with list of users from database");
         }
@@ -101,22 +101,21 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     public User get(Long id) {
         try {
             return jdbc.queryForObject(SELECT_USER_BY_ID_QUERY, Map.of("id", id), new UserRowMapper());
-        }catch (EmptyResultDataAccessException exception) {
+        } catch (EmptyResultDataAccessException exception) {
             log.error("There is no such user with id {}", id);
             throw new ApiException("There is no such an user at database exists");
-        }catch (Exception exception) {
-            log.error("An a problem occured");
-            throw new ApiException("An error occured");
+        } catch (Exception exception) {
+            log.error("An a problem occurred");
+            throw new ApiException("An error occurred");
         }
     }
 
     @Override
     public User update(User data) {
         try {
-           jdbc.update(UPDATE_USER_DATA_QUERY, getSqlParametersUpdateUserSource(data));
-           return get(data.getId());
-        }
-        catch (EmptyResultDataAccessException exception) {
+            jdbc.update(UPDATE_USER_DATA_QUERY, getSqlParametersUpdateUserSource(data));
+            return get(data.getId());
+        } catch (EmptyResultDataAccessException exception) {
             throw new ApiException("No user found by id: " + data.getId());
         } catch (Exception exception) {
             log.error(exception.getMessage());
@@ -125,26 +124,26 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
 
     }
 
-    private  SqlParameterSource getSqlParametersUpdateUserSource(User data) {
-            return new MapSqlParameterSource()
-                    .addValues(Map.of(
-                            "id", data.getId(),
-                            "firstName", data.getFirstName(),
-                            "lastName", data.getLastName(),
-                            "email", data.getEmail(),
-                            "password", encoder.encode(data.getPassword()),
-                            "age", data.getAge()));
-        }
+    private SqlParameterSource getSqlParametersUpdateUserSource(User data) {
+        return new MapSqlParameterSource()
+                .addValues(Map.of(
+                        "id", data.getId(),
+                        "firstName", data.getFirstName(),
+                        "lastName", data.getLastName(),
+                        "email", data.getEmail(),
+                        "password", encoder.encode(data.getPassword()),
+                        "age", data.getAge()));
+    }
 
     @Override
     public User getUserByEmail(String email) {
         log.info(email);
         try {
             return jdbc.queryForObject(SELECT_USER_BY_EMAIL_QUERY, Map.of("email", email), new UserRowMapper());
-        }catch (EmptyResultDataAccessException exception) {
+        } catch (EmptyResultDataAccessException exception) {
             log.error("There is no such user with email {}", email);
             throw new ApiException("There is no such an user at Database exists");
-        }catch (Exception exception) {
+        } catch (Exception exception) {
             log.error("An a problem occured");
             throw new ApiException("An error occured");
         }

@@ -31,7 +31,7 @@ import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleTyp
 class RoleRepositoryImplTest {
 
     @Mock
-    NamedParameterJdbcTemplate jdbcTemplate;
+    NamedParameterJdbcTemplate jdbc;
 
     @InjectMocks
     RoleRepositoryImpl roleRepository;
@@ -47,7 +47,7 @@ class RoleRepositoryImplTest {
         //given
         long roleId = 1L;
         Role demand = new Role(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
-        when(jdbcTemplate.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
+        when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenReturn(demand);
 
         //when
@@ -63,7 +63,7 @@ class RoleRepositoryImplTest {
     void it_should_throw_main_exception() {
         //given
         long roleId = 1L;
-        when(jdbcTemplate.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
+        when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenThrow(ApiException.class);
 
         //when
@@ -78,7 +78,7 @@ class RoleRepositoryImplTest {
     void it_should_throw_empty_result_data_access_exception() {
         //given
         long roleId = 1L;
-        when(jdbcTemplate.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
+        when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenThrow(EmptyResultDataAccessException.class);
         //when
         Exception actual = assertThrows(ApiException.class, () -> roleRepository.get(roleId));
@@ -92,7 +92,7 @@ class RoleRepositoryImplTest {
         //given
         Role demand1 = new Role(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
         List<Role> expected = List.of(demand1);
-        when(jdbcTemplate.query(anyString(), any(RoleRowMapper.class)))
+        when(jdbc.query(anyString(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
 
         //when
@@ -112,7 +112,7 @@ class RoleRepositoryImplTest {
         Role demand2 = new Role(2L, "ROLE_MANAGER", "READ:USER,READ:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER");
         Role demand3 = new Role(3L, "ROLE_ADMIN", "READ:USER,READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER");
         List<Role> expected = List.of(demand1, demand2, demand3);
-        when(jdbcTemplate.query(anyString(), any(RoleRowMapper.class)))
+        when(jdbc.query(anyString(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
 
         //when
@@ -127,7 +127,7 @@ class RoleRepositoryImplTest {
     @Test
     void it_should_throw_exception() {
         //given
-        when(jdbcTemplate.query(anyString(), any(RoleRowMapper.class)))
+        when(jdbc.query(anyString(), any(RoleRowMapper.class)))
                 .thenThrow(ApiException.class);
 
         //when
@@ -143,7 +143,7 @@ class RoleRepositoryImplTest {
         //given
         long id = 1L;
         Role expected = new Role(id, "ROLE_USER", "READ:USER,READ:CUSTOMER");
-        when(jdbcTemplate.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
+        when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
         //when
         Role actual = roleRepository.getRoleByUserId(id);
@@ -157,7 +157,7 @@ class RoleRepositoryImplTest {
     @Test
     void it_should_throw_empty_result_data_exception() {
         //given
-        when(jdbcTemplate.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
+        when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenThrow(EmptyResultDataAccessException.class);
         //when
         Exception actual = assertThrows(ApiException.class, () -> roleRepository.getRoleByUserId(1L));
@@ -170,7 +170,7 @@ class RoleRepositoryImplTest {
     @Test
     void it_should_throw_main_exception_in_getRoleByUserId() {
         //given
-        when(jdbcTemplate.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
+        when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenThrow(ApiException.class);
         //when
         Exception actual = assertThrows(ApiException.class, () -> roleRepository.getRoleByUserId(1L));
@@ -185,29 +185,29 @@ class RoleRepositoryImplTest {
         //given
         long id = 1L;
         Role expected = new Role(id, "ROLE_USER", "READ:USER,READ:CUSTOMER");
-        when(jdbcTemplate.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
+        when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
-        when(jdbcTemplate.update(anyString(), anyMap()))
+        when(jdbc.update(anyString(), anyMap()))
                 .thenReturn(1);
         //when
         roleRepository.addRoleToUser(1L, ROLE_USER.name());
         //then
-        Mockito.verify(jdbcTemplate).queryForObject(anyString(), anyMap(), any(RoleRowMapper.class));
-        Mockito.verify(jdbcTemplate).update(anyString(), anyMap());
+        Mockito.verify(jdbc).queryForObject(anyString(), anyMap(), any(RoleRowMapper.class));
+        Mockito.verify(jdbc).update(anyString(), anyMap());
     }
 
     //testing method  addRoleToUser(Long userId, String roleName)
     @Test
     void it_should_not_update_one_user_and_assign_one_role_and_throw_empty_result_exception() {
         //given
-        when(jdbcTemplate.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
+        when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenThrow(EmptyResultDataAccessException.class);
         //when
         ApiException actual = assertThrows(ApiException.class, () -> roleRepository.addRoleToUser(1L, ROLE_USER.name()));
         //then
         assertEquals("No Role found by name: " + ROLE_USER.name(), actual.getMessage());
-        Mockito.verify(jdbcTemplate, times(1)).queryForObject(anyString(), anyMap(), any(RoleRowMapper.class));
-        Mockito.verify(jdbcTemplate, never())
+        Mockito.verify(jdbc, times(1)).queryForObject(anyString(), anyMap(), any(RoleRowMapper.class));
+        Mockito.verify(jdbc, never())
                 .update(anyString(), anyMap());
     }
 
@@ -215,14 +215,14 @@ class RoleRepositoryImplTest {
     @Test
     void it_should_not_update_one_user_and_assign_one_role_and_throw_exception() {
         //given
-        when(jdbcTemplate.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
+        when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenThrow(ApiException.class);
         //when
         ApiException actual = assertThrows(ApiException.class, () -> roleRepository.addRoleToUser(1L, ROLE_USER.name()));
         //then
         assertEquals("An error occured. Please try again", actual.getMessage());
-        Mockito.verify(jdbcTemplate, times(1)).queryForObject(anyString(), anyMap(), any(RoleRowMapper.class));
-        Mockito.verify(jdbcTemplate, never())
+        Mockito.verify(jdbc, times(1)).queryForObject(anyString(), anyMap(), any(RoleRowMapper.class));
+        Mockito.verify(jdbc, never())
                 .update(anyString(), anyMap());
     }
 }
