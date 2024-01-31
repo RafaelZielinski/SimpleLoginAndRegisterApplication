@@ -9,15 +9,15 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
  * @since 31/01/2024
  */
 public interface RoleProvider {
-    default Role first() {
+    default Role firstRole() {
         return new Role(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
     }
 
-    default Role second() {
+    default Role secondRole() {
         return new Role(2L, "ROLE_MANAGER", "READ:USER,READ:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER");
     }
 
-    default Role third() {
+    default Role thirdRole() {
         return new Role(3L, "ROLE_ADMIN", "READ:USER,READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER");
     }
 }

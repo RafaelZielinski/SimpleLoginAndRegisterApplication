@@ -11,14 +11,14 @@ import java.time.LocalDateTime;
  * @since 31/01/2024
  */
 public interface UserProvider {
-    default User first() {
+    default User firstUser() {
         return new User(
                 1L, "Rafał", "Zieliński", "rafekzielinski@wp.pl", 26L,
                 "password", true, true, false,
                 LocalDateTime.of(2024, 1, 30, 6, 30, 3, 170603900));
     }
 
-    default User second() {
+    default User secondUser() {
         return new User(
                 2L, "Kamil", "Zieliński", "kamilzielinski@wp.pl", 19L,
                 "password", true, true, false,
