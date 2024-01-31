@@ -7,9 +7,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.UserProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
  * @licence ask rafekzielinski@wp.pl
  * @since 30/01/2024
  */
-class UserRepositoryImplTest {
+class UserRepositoryImplTest implements UserProvider {
 
     @Mock
     NamedParameterJdbcTemplate jdbc;
@@ -55,11 +55,7 @@ class UserRepositoryImplTest {
     @Test
     void it_should_return_one_size_list() {
         //given
-        User expected = new User(
-                1L, "Rafał", "Zieliński", "rafekzielinski@wp.pl", 26L,
-                "password", true, true, false,
-                LocalDateTime.of(2024, 1, 30, 6, 30, 3, 170603900));
-        System.out.println(LocalDateTime.now());
+        User expected = first();
         when(jdbc.query(anyString(), any(UserRowMapper.class)))
                 .thenReturn(List.of(expected));
         //when
@@ -74,14 +70,8 @@ class UserRepositoryImplTest {
     @Test
     void it_should_return_two_size_list() {
         //given
-        User expected1 = new User(
-                1L, "Rafał", "Zieliński", "rafekzielinski@wp.pl", 26L,
-                "password", true, true, false,
-                LocalDateTime.of(2024, 1, 30, 6, 30, 3, 170603900));
-        User expected2 = new User(
-                1L, "Kamil", "Zieliński", "kamilzielinski@wp.pl", 19L,
-                "password", true, true, false,
-                LocalDateTime.of(2024, 1, 29, 6, 30, 3, 173333900));
+        User expected1 = first();
+        User expected2 = second();
 
         when(jdbc.query(anyString(), any(UserRowMapper.class)))
                 .thenReturn(List.of(expected1, expected2));
@@ -90,7 +80,6 @@ class UserRepositoryImplTest {
         //then
         assertEquals(actual.size(), 2);
         assertThat(actual).containsExactlyInAnyOrderElementsOf(List.of(expected1, expected2));
-
     }
 
 }
