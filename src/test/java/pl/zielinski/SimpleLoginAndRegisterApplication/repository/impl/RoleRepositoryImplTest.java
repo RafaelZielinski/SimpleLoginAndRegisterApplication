@@ -47,7 +47,7 @@ class RoleRepositoryImplTest implements RoleProvider{
     void it_should_return_role_with_success() {
         //given
         long roleId = 1L;
-        Role expected = first();
+        Role expected = firstRole();
         when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
 
@@ -91,7 +91,7 @@ class RoleRepositoryImplTest implements RoleProvider{
     @Test
     void it_should_return_one_role() {
         //given
-        Role role1 = first();
+        Role role1 = firstRole();
         List<Role> expected = List.of(role1);
         when(jdbc.query(anyString(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
@@ -109,9 +109,9 @@ class RoleRepositoryImplTest implements RoleProvider{
     @Test
     void it_should_return_three_roles() {
         //given
-        Role demand1 = first();
-        Role demand2 = second();
-        Role demand3 = third();
+        Role demand1 = firstRole();
+        Role demand2 = secondRole();
+        Role demand3 = thirdRole();
         List<Role> expected = List.of(demand1, demand2, demand3);
         when(jdbc.query(anyString(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
@@ -143,7 +143,7 @@ class RoleRepositoryImplTest implements RoleProvider{
     void it_should_return_role() {
         //given
         long id = 1L;
-        Role expected = first();
+        Role expected = firstRole();
         when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
         //when
@@ -184,7 +184,7 @@ class RoleRepositoryImplTest implements RoleProvider{
     @Test
     void it_should_update_one_user_and_assign_one_role() {
         //given
-        Role expected = first();
+        Role expected = firstRole();
         when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
         when(jdbc.update(anyString(), anyMap()))
