@@ -219,4 +219,49 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         assertEquals("An error occurred. Please try again.", actual.getMessage());
     }
 
+    //testing User getUserByEmail(String email)
+    @Test
+    void it_should_get_user_by_email() {
+        //given
+        String email = "kamilzielinski@wp.pl";
+        User expected = secondUser();
+        //when
+        when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
+                .thenReturn(expected);
+
+        User actual = userRepository.getUserByEmail(email);
+        //then
+        assertEquals(expected, actual);
+    }
+
+    //testing User getUserByEmail(String email)
+    @Test
+    void it_should_not_found_user_by_email() {
+        //given
+        String email = "kamilzielinski@wp.pl";
+
+        //when
+        when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
+                .thenThrow(EmptyResultDataAccessException.class);
+
+        ApiException actual = assertThrows(ApiException.class, () -> userRepository.getUserByEmail(email));
+        //then
+        assertEquals("There is no such an user at Database exists", actual.getMessage());
+    }
+
+    //testing User getUserByEmail(String email)
+    @Test
+    void it_should_throw_like_nullpointer_exception() {
+        //given
+        String email = "kamilzielinski@wp.pl";
+
+        //when
+        when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
+                .thenThrow(NullPointerException.class);
+
+        ApiException actual = assertThrows(ApiException.class, () -> userRepository.getUserByEmail(email));
+        //then
+        assertEquals("An error occured", actual.getMessage());
+    }
+
 }
