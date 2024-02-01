@@ -6,11 +6,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.RoleProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.UserProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
@@ -22,8 +26,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 /**
@@ -39,6 +43,9 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
 
     @Mock
     RoleRepositoryImpl roleRepository;
+
+    @Mock
+    BCryptPasswordEncoder encoder;
 
     @InjectMocks
     UserRepositoryImpl userRepository;
@@ -91,7 +98,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         assertThat(actual).containsExactlyInAnyOrderElementsOf(List.of(expected1, expected2));
     }
 
-//    loadUserByUsername(String email)
+//   testing loadUserByUsername(String email)
     @Test
     void it_should_return_user_principal() {
         //given
@@ -108,7 +115,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         assertEquals(actual.getUsername(), email);
     }
 
-    //    loadUserByUsername(String email)
+    //   testing loadUserByUsername(String email)
     @Test
     void it_should_throw_user_not_found_exception() {
         //given
@@ -119,6 +126,97 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         Exception actual = assertThrows(UsernameNotFoundException.class, () -> userRepository.loadUserByUsername(email));
         //then
         assertEquals(actual.getMessage(), "User not found exception");
+    }
+
+
+    // testing User get(Long id)
+    @Test
+    void it_should_get_user_by_get_method() {
+        //given
+        long id = 1L;
+        User expected = firstUser();
+        when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
+                .thenReturn(expected);
+        //when
+        User actual = userRepository.get(id);
+        //then
+        assertEquals(expected.toString(), actual.toString());
+    }
+
+    // testing User get(Long id)
+    @Test
+    void it_should_throw_exception_not_found_user_by_get_method() {
+        //given
+        long id = 1L;
+        when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
+                .thenThrow(EmptyResultDataAccessException.class);
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> userRepository.get(id));
+        //then
+        assertEquals("There is no such an user at database exists", actual.getMessage() );
+    }
+
+    // testing User get(Long id)
+    @Test
+    void it_should_throw_exception_other_by_get_method() {
+        //given
+        long id = 1L;
+        when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
+                .thenThrow(ApiException.class);
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> userRepository.get(id));
+        //then
+        assertEquals( "An error occurred", actual.getMessage() );
+    }
+
+    //testing User update(User user)
+    @Test
+    void it_should_update_user_by_update_method() {
+        //given
+        User asArgument = firstUser();
+        User expected = secondUser();
+        when(jdbc.update(anyString(), any(SqlParameterSource.class)))
+                .thenReturn(1);
+        when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
+                .thenReturn(expected);
+        when(encoder.encode(anyString()))
+                .thenReturn("password");
+        //when
+        User actual = userRepository.update(asArgument);
+        //then
+        Mockito.verify(jdbc, times(1)).update(anyString(), any(SqlParameterSource.class));
+        assertEquals(expected.toString(), actual.toString());
+    }
+
+    //testing User update(User user)
+    @Test
+    void it_should_not_found_user_by_update_method_and_throw_exception() {
+        //given
+        User asArgument = firstUser();
+        User expected = secondUser();
+        when(encoder.encode(anyString()))
+                .thenReturn("password");
+        when(jdbc.update(anyString(), any(SqlParameterSource.class)))
+                .thenThrow(EmptyResultDataAccessException.class);
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> userRepository.update(asArgument));
+        //then
+        assertEquals("No user found by id: " + asArgument.getId(), actual.getMessage());
+    }
+    //testing User update(User user)
+    @Test
+    void it_should_throw_exception_like_null_pointer_exception() {
+        //given
+        User asArgument = firstUser();
+        User expected = secondUser();
+        when(encoder.encode(anyString()))
+                .thenReturn(null);
+        when(jdbc.update(anyString(), any(SqlParameterSource.class)))
+                .thenThrow(EmptyResultDataAccessException.class);
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> userRepository.update(asArgument));
+        //then
+        assertEquals("An error occurred. Please try again.", actual.getMessage());
     }
 
 }
