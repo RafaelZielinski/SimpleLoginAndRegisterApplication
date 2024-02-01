@@ -98,7 +98,20 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         assertThat(actual).containsExactlyInAnyOrderElementsOf(List.of(expected1, expected2));
     }
 
-//   testing loadUserByUsername(String email)
+    //testing Collection<User> list()
+    @Test
+    void it_should_throw_exception() {
+        //given
+        when(jdbc.query(anyString(), any(UserRowMapper.class)))
+                .thenThrow(NullPointerException.class);
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> userRepository.list());
+        //then
+        assertEquals("There is problem with list of users from database", actual.getMessage());
+    }
+
+
+    //   testing loadUserByUsername(String email)
     @Test
     void it_should_return_user_principal() {
         //given
