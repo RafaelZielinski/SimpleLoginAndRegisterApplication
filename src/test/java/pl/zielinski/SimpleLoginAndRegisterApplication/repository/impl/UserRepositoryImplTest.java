@@ -277,4 +277,39 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         assertEquals("An error occured", actual.getMessage());
     }
 
+    // testing User create(User user)
+    @Test
+    void it_should_create_user() {
+        //given
+
+            // i have to do when(getEmail) then return something
+            // check sqlParametersInsertUserSource
+            // check keyholder
+            //jdbc.update mock
+            // roleRepository mock
+            // create user expected
+        //when
+            //  trigger tested method
+        //then
+            // check if returning user is the same as a expected
+    }
+    // testing User create(User user)
+    @Test
+    void it_should_throw_email_found_in_database() {
+        //given
+
+        // i have to do when(getEmail) then return something
+        // check sqlParametersInsertUserSource
+        // check keyholder
+        //jdbc.update mock
+        // roleRepository mock
+        // create user expected
+        //when
+        //  trigger tested method
+        //then
+        // check if returning exception is the same as expected
+    }
+
+
+
 }
