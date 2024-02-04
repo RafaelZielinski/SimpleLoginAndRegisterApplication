@@ -1,12 +1,15 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl;
 
-import org.assertj.core.api.IntegerAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -36,6 +39,7 @@ import static org.mockito.Mockito.*;
  * @licence ask rafekzielinski@wp.pl
  * @since 30/01/2024
  */
+
 class UserRepositoryImplTest implements UserProvider, RoleProvider {
 
     @Mock
@@ -46,6 +50,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
 
     @Mock
     BCryptPasswordEncoder encoder;
+
 
     @InjectMocks
     UserRepositoryImpl userRepository;
@@ -166,7 +171,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         //when
         ApiException actual = assertThrows(ApiException.class, () -> userRepository.get(id));
         //then
-        assertEquals("There is no such an user at database exists", actual.getMessage() );
+        assertEquals("There is no such an user at database exists", actual.getMessage());
     }
 
     // testing User get(Long id)
@@ -179,7 +184,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         //when
         ApiException actual = assertThrows(ApiException.class, () -> userRepository.get(id));
         //then
-        assertEquals( "An error occurred", actual.getMessage() );
+        assertEquals("An error occurred", actual.getMessage());
     }
 
     //testing User update(User user)
@@ -216,12 +221,12 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         //then
         assertEquals("No user found by id: " + asArgument.getId(), actual.getMessage());
     }
+
     //testing User update(User user)
     @Test
     void it_should_throw_exception_like_null_pointer_exception() {
         //given
         User asArgument = firstUser();
-        User expected = secondUser();
         when(encoder.encode(anyString()))
                 .thenReturn(null);
         when(jdbc.update(anyString(), any(SqlParameterSource.class)))
@@ -282,15 +287,16 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
     void it_should_create_user() {
         //given
         User expected = firstUser();
-        KeyHolder keyHolder = new GeneratedKeyHolder();
         when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class)))
                 .thenReturn(0);
         when(encoder.encode(any())).thenReturn("password");
-        when(jdbc.update(anyString(), any(SqlParameterSource.class),eq(keyHolder) , any(String[].class)))
+        when(jdbc.update(anyString(), any(SqlParameterSource.class), any(GeneratedKeyHolder.class), any(String[].class)))
                 .thenAnswer(invocation -> {
+                    GeneratedKeyHolder keyHolder = invocation.getArgument(2);
                     keyHolder.getKeyList().add(new HashMap<>(Map.of("id", 1)));
                     return 1;
                 });
+
         doNothing().when(roleRepository).addRoleToUser(anyLong(), anyString());
 
         //when
@@ -299,6 +305,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         verify(jdbc, times(1)).update(anyString(), any(SqlParameterSource.class), any(KeyHolder.class), any(String[].class));
         verify(roleRepository, times(1)).addRoleToUser(eq(actual.getId()), eq("ROLE_USER"));
     }
+
     // testing User create(User user)
     @Test
     void it_should_throw_email_found_in_database() {
@@ -312,7 +319,6 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         //then
         assertEquals("There is already taken that email", actual.getMessage());
     }
-
 
 
 }
