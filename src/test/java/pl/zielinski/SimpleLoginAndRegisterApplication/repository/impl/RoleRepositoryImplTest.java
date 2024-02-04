@@ -10,6 +10,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
+import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.RoleProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.RoleRowMapper;
 
 import java.util.Collection;
@@ -28,7 +29,7 @@ import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleTyp
  * @licence ask rafekzielinski@wp.pl
  * @since 27/01/2024
  */
-class RoleRepositoryImplTest {
+class RoleRepositoryImplTest implements RoleProvider{
 
     @Mock
     NamedParameterJdbcTemplate jdbc;
@@ -46,16 +47,16 @@ class RoleRepositoryImplTest {
     void it_should_return_role_with_success() {
         //given
         long roleId = 1L;
-        Role demand = new Role(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
+        Role expected = firstRole();
         when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
-                .thenReturn(demand);
+                .thenReturn(expected);
 
         //when
         Role actual = roleRepository.get(roleId);
         //then
-        assertEquals(actual.getId(), demand.getId());
-        assertEquals(actual.getName(), demand.getName());
-        assertEquals(actual.getPermission(), demand.getPermission());
+        assertEquals(actual.getId(), expected.getId());
+        assertEquals(actual.getName(), expected.getName());
+        assertEquals(actual.getPermission(), expected.getPermission());
     }
 
     //testing method get(Long id)
@@ -90,8 +91,8 @@ class RoleRepositoryImplTest {
     @Test
     void it_should_return_one_role() {
         //given
-        Role demand1 = new Role(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
-        List<Role> expected = List.of(demand1);
+        Role role1 = firstRole();
+        List<Role> expected = List.of(role1);
         when(jdbc.query(anyString(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
 
@@ -108,9 +109,9 @@ class RoleRepositoryImplTest {
     @Test
     void it_should_return_three_roles() {
         //given
-        Role demand1 = new Role(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
-        Role demand2 = new Role(2L, "ROLE_MANAGER", "READ:USER,READ:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER");
-        Role demand3 = new Role(3L, "ROLE_ADMIN", "READ:USER,READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER");
+        Role demand1 = firstRole();
+        Role demand2 = secondRole();
+        Role demand3 = thirdRole();
         List<Role> expected = List.of(demand1, demand2, demand3);
         when(jdbc.query(anyString(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
@@ -142,7 +143,7 @@ class RoleRepositoryImplTest {
     void it_should_return_role() {
         //given
         long id = 1L;
-        Role expected = new Role(id, "ROLE_USER", "READ:USER,READ:CUSTOMER");
+        Role expected = firstRole();
         when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
         //when
@@ -183,8 +184,7 @@ class RoleRepositoryImplTest {
     @Test
     void it_should_update_one_user_and_assign_one_role() {
         //given
-        long id = 1L;
-        Role expected = new Role(id, "ROLE_USER", "READ:USER,READ:CUSTOMER");
+        Role expected = firstRole();
         when(jdbc.queryForObject(anyString(), anyMap(), any(RoleRowMapper.class)))
                 .thenReturn(expected);
         when(jdbc.update(anyString(), anyMap()))
