@@ -1,5 +1,6 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl;
 
+import org.assertj.core.api.IntegerAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -9,6 +10,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,16 +22,13 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.R
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.UserProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * @author rafek
@@ -118,7 +118,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         String email = "rafekzielinski@wp.pl";
         User user = firstUser();
         Role role = firstRole();
-        when(jdbc.queryForObject(Mockito.anyString(), Mockito.anyMap(), Mockito.any(UserRowMapper.class)))
+        when(jdbc.queryForObject(Mockito.anyString(), Mockito.anyMap(), any(UserRowMapper.class)))
                 .thenReturn(user);
         when(roleRepository.get(1L))
                 .thenReturn(firstRole());
@@ -133,7 +133,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
     void it_should_throw_user_not_found_exception() {
         //given
         String email = "rafekzielinski@wp.pl";
-        when(jdbc.queryForObject(Mockito.anyString(), Mockito.anyMap(), Mockito.any(UserRowMapper.class)))
+        when(jdbc.queryForObject(Mockito.anyString(), Mockito.anyMap(), any(UserRowMapper.class)))
                 .thenReturn(null);
         //when
         Exception actual = assertThrows(UsernameNotFoundException.class, () -> userRepository.loadUserByUsername(email));
@@ -281,33 +281,36 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
     @Test
     void it_should_create_user() {
         //given
+        User expected = firstUser();
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class)))
+                .thenReturn(0);
+        when(encoder.encode(any())).thenReturn("password");
+        when(jdbc.update(anyString(), any(SqlParameterSource.class),eq(keyHolder) , any(String[].class)))
+                .thenAnswer(invocation -> {
+                    keyHolder.getKeyList().add(new HashMap<>(Map.of("id", 1)));
+                    return 1;
+                });
+        doNothing().when(roleRepository).addRoleToUser(anyLong(), anyString());
 
-            // i have to do when(getEmail) then return something
-            // check sqlParametersInsertUserSource
-            // check keyholder
-            //jdbc.update mock
-            // roleRepository mock
-            // create user expected
         //when
-            //  trigger tested method
+        User actual = userRepository.create(expected);
         //then
-            // check if returning user is the same as a expected
+        verify(jdbc, times(1)).update(anyString(), any(SqlParameterSource.class), any(KeyHolder.class), any(String[].class));
+        verify(roleRepository, times(1)).addRoleToUser(eq(actual.getId()), eq("ROLE_USER"));
     }
     // testing User create(User user)
     @Test
     void it_should_throw_email_found_in_database() {
         //given
+        User user = firstUser();
+        when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class)))
+                .thenReturn(1);
 
-        // i have to do when(getEmail) then return something
-        // check sqlParametersInsertUserSource
-        // check keyholder
-        //jdbc.update mock
-        // roleRepository mock
-        // create user expected
         //when
-        //  trigger tested method
+        ApiException actual = assertThrows(ApiException.class, () -> userRepository.create(user));
         //then
-        // check if returning exception is the same as expected
+        assertEquals("There is already taken that email", actual.getMessage());
     }
 
 
