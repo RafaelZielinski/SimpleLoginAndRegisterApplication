@@ -1,4 +1,4 @@
-package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl;
+package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.unitTests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +10,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
+import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.RoleRepositoryImpl;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.RoleProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.RoleRowMapper;
 

@@ -1,4 +1,4 @@
-package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl;
+package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.unitTests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +21,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
+import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.RoleRepositoryImpl;
+import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.UserRepositoryImpl;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.RoleProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.UserProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
