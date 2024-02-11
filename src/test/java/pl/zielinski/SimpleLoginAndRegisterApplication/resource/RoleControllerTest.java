@@ -1,23 +1,19 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.resource;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import pl.zielinski.SimpleLoginAndRegisterApplication.configuration.SecurityTestConfiguration;
-import pl.zielinski.SimpleLoginAndRegisterApplication.dto.RoleDTO;
-import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
+import pl.zielinski.SimpleLoginAndRegisterApplication.provider.TokenProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.RoleService;
 
 import java.util.List;
@@ -30,35 +26,38 @@ import static org.mockito.Mockito.when;
  * @licence ask rafekzielinski@wp.pl
  * @since 05/02/2024
  */
-@ExtendWith(SpringExtension.class)
+
 @WebMvcTest(RoleController.class)
-@AutoConfigureMockMvc
-@Import(SecurityTestConfiguration.class)
-class RoleControllerTest implements RoleDTOProvider{
+@AutoConfigureMockMvc()
+@ActiveProfiles("test")
+class RoleControllerTest implements RoleDTOProvider {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private RoleService roleService;
 
-    @InjectMocks
-    private RoleController roleController;
-
+    @MockBean
+    private TokenProvider tokenProvider;
 
     @Test
     void it_should_return_list_of_two_roles() throws Exception {
+
         //given
         when(roleService.getRoles()).thenReturn(List.of(firstRoleDTO(), secondRoleDTO()));
         //when
         //then
-        mockMvc.perform(MockMvcRequestBuilders.get("/list")
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(MockMvcRequestBuilders.get("/roles/list")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .with(SecurityMockMvcRequestPostProcessors.user("username"))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("List of roles"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.roles").isArray())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.roles[0]").value(firstRoleDTO()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.roles[1]").value(secondRoleDTO()));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.roles[0].name").value("ROLE_USER"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.roles[1].name").value("ROLE_MANAGER"));
 
     }
 }
