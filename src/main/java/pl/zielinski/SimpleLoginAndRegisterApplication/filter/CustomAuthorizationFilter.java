@@ -39,7 +39,8 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     private final String EMPTY = "'";
     private final String[] PUBLIC_ROUTES = {
             "/users/login/**",
-            "/users/register/**"
+            "/users/register/**",
+            "/roles/list"
     };
 
     @Override
