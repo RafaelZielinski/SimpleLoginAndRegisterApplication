@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
@@ -89,6 +90,36 @@ class RoleControllerTest implements RoleDTOProvider {
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.developerMessage").value("An error occurred. Please try again"));
+    }
+
+    //test for method getRoleById()
+    @Test
+    void it_should_return_correctly_role_by_id() throws Exception {
+        //given
+        when(roleService.getRoleById(any())).thenReturn(firstRoleDTO());
+        //when
+        //then
+        mockMvc.perform(MockMvcRequestBuilders.get("/roles/role/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Role retrieved"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.role.name").value("ROLE_USER"));;
+    }
+
+    //test for method getRoleById()
+    @Test
+    void it_should_throw_error_there_is_no_role_by_id() throws Exception {
+        //given
+        when(roleService.getRoleById(any())).thenThrow(new ApiException("There is no such a role "));
+        //when
+        //then
+        mockMvc.perform(MockMvcRequestBuilders.get("/roles/role/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.reason").value("There is no such a role "));
+
     }
 
 
