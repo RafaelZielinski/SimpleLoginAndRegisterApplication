@@ -53,7 +53,7 @@ public class RoleController {
         );
     }
 
-    @GetMapping(path = "/roleByUserId//{userId}")
+    @GetMapping(path = "/roleByUserId/{userId}")
     ResponseEntity<HttpResponse> getRoleByUserId(@PathVariable("userId") Long id) {
         return ResponseEntity.ok(
                 HttpResponse.builder()

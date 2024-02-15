@@ -43,7 +43,8 @@ public class SecurityConfiguration {
 
     private final String[] PUBLIC_ROUTES = {
             "/users/login/**",
-            "/users/register/**"
+            "/users/register/**",
+            "/roles/**"
     };
 
     @Bean

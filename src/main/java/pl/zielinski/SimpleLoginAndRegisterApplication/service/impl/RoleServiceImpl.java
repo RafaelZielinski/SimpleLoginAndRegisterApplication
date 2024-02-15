@@ -26,7 +26,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleDTO getRoleByUserId(Long id) {
-        return RoleDTOMapper.fromRole(repository.get(id));
+        return RoleDTOMapper.fromRole(repository.getRoleByUserId(id));
     }
 
     @Override
