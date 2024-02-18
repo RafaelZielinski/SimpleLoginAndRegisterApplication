@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
+import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.provider.TokenProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.RoleService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
@@ -67,4 +68,19 @@ class UserControllerTest implements UserDTOProvider {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.user.firstName").value("Rafał"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.size()").value(1));
     }
+    @DisplayName("Testing method getUser(Long id)")
+    @Test
+    void it_should_throw_exception_when_there_is_no_such_user() throws Exception {
+        //given
+        //when
+        when(userService.getUser(any())).thenThrow(new ApiException("There is no such an user at database exists"));
+        //then
+        mockMvc.perform(MockMvcRequestBuilders.get("/users/user/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.reason").value("There is no such an user at database exists"));
+
+    }
+
 }
