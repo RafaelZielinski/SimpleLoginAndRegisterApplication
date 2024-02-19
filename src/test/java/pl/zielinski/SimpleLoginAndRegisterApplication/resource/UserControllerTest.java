@@ -21,6 +21,7 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.provider.TokenProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.RoleService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -83,4 +84,48 @@ class UserControllerTest implements UserDTOProvider {
 
     }
 
+    @DisplayName("Testing method getUsers()")
+    @Test
+    void it_should_return_list_of_two_User_DTO() throws Exception {
+        //given
+        when(userService.getUsers()).thenReturn(List.of(first(), second()));
+        //when
+        mockMvc.perform(MockMvcRequestBuilders.get("/users/list")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("List of users"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.users[0].firstName").value("Rafał"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.users.size()").value(2));
+        //then
+    }
+
+    @DisplayName("Testing method getUsers()")
+    @Test
+    void it_should_return_empty_list_of_User_DTO() throws Exception {
+        //given
+        when(userService.getUsers()).thenReturn(Collections.emptyList());
+        //when
+        mockMvc.perform(MockMvcRequestBuilders.get("/users/list")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("List of users"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.users.size()").value(0));
+        //then
+    }
+
+    @DisplayName("Testing method getUsers()")
+    @Test
+    void it_should_throw_api_exception_error_with_derriving_users_from_database() throws Exception {
+        //given
+        when(userService.getUsers()).thenThrow(new ApiException("There is problem with list of users from database"));
+        //when
+        mockMvc.perform(MockMvcRequestBuilders.get("/users/list")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.reason").value("There is problem with list of users from database"));
+        //then
+    }
 }
