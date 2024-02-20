@@ -54,7 +54,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    ResponseEntity<HttpResponse> login(@RequestBody @Valid User user) {
+    ResponseEntity<HttpResponse> register(@RequestBody @Valid User user) {
         return ResponseEntity.ok(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
