@@ -42,6 +42,7 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 public class HandleException extends ResponseEntityExceptionHandler implements ErrorController {
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
+        log.error(ex.getMessage());
         return new ResponseEntity<>(HttpResponse.builder()
                 .timeStamp(now().toString())
                 .reason(ex.getMessage())
@@ -53,6 +54,7 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        log.error(ex.getMessage());
         List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
         String fields = fieldErrors.stream().map(DefaultMessageSourceResolvable::getDefaultMessage).collect(Collectors.joining(", "));
         return new ResponseEntity<>(HttpResponse.builder()
@@ -125,6 +127,7 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
     }
 
     private ResponseEntity<HttpResponse> createErrorHttpResponse(HttpStatus status, String reason, Exception exception) {
+        log.error(exception.getMessage());
         return new ResponseEntity<>(HttpResponse.builder()
                 .timeStamp(LocalTime.now().toString())
                 .developerMessage(exception.getMessage())
