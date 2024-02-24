@@ -42,4 +42,20 @@ public interface UserDTOProvider {
                 .permissions("READ:USER,READ:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER")
                 .build();
     }
+
+    default UserDTO third() {
+        return UserDTO.builder()
+                .id(3l)
+                .firstName("Edward")
+                .lastName("Klepko")
+                .email("edwardklepko69@wp.pl")
+                .age("44")
+                .enabled(false)
+                .isNotLocked(false)
+                .isUsingMfa(false)
+                .createdAt(LocalDateTime.now())
+                .roleName("ROLE_SYSADMIN")
+                .permissions("READ:USER:READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER,DELETE:USER,DELETE:CUSTOMER")
+                .build();
+    }
 }
