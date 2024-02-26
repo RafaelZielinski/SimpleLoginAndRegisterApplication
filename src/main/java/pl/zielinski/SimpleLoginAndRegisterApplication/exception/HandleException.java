@@ -127,7 +127,6 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
     }
 
     private ResponseEntity<HttpResponse> createErrorHttpResponse(HttpStatus status, String reason, Exception exception) {
-        log.error(exception.getMessage());
         return new ResponseEntity<>(HttpResponse.builder()
                 .timeStamp(LocalTime.now().toString())
                 .developerMessage(exception.getMessage())
