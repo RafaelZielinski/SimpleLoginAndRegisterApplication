@@ -20,6 +20,7 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.security.authentication.UsernamePasswordAuthenticationToken.unauthenticated;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.mapper.RoleDTOMapper.toRole;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMapper.toUser;
@@ -55,14 +56,19 @@ public class UserController {
 
     @PostMapping("/register")
     ResponseEntity<HttpResponse> register(@RequestBody @Valid User user) {
-        return ResponseEntity.ok(
+        log.error("error");
+        log.info("error");
+        UserDTO userDTO = userService.createUser(user);
+        return new ResponseEntity<>(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
-                        .status(HttpStatus.CREATED)
-                        .statusCode(HttpStatus.CREATED.value())
+                        .status(CREATED)
+                        .statusCode(CREATED.value())
                         .message("User created")
-                        .data(Map.of("user", userService.createUser(user)))
-                        .build());
+                        .data(Map.of("user", userDTO))
+                        .build(), CREATED);
+
+
     }
 
     @GetMapping("/list")
