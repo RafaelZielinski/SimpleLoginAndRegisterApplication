@@ -160,4 +160,31 @@ class UserControllerTest implements UserDTOProvider {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.user.firstName").value("Rafał"));
         //then
     }
+
+    @DisplayName("Testing method register(User user)")
+    @Test
+    void it_should_throw_exception_that_such_user_email_have_already_existed() throws Exception {
+        //given
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("firstName", "Rafał");
+        jsonObject.addProperty("lastName", "Zieliński");
+        jsonObject.addProperty("email", "rafekzielinski@wp.pl");
+        jsonObject.addProperty("password", "password");
+        jsonObject.addProperty("age", 44);
+
+
+        when(userService.createUser(ArgumentMatchers.any(User.class))).thenThrow(new ApiException("There is already taken that email"));
+
+        //when
+        mockMvc.perform(MockMvcRequestBuilders.post("/users/register")
+                        .content(jsonObject.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(
+                                new UsernamePasswordAuthenticationToken(1L, null, List.of(
+                                        new SimpleGrantedAuthority("USER"))))))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.reason").value("There is already taken that email"));
+        //then
+    }
 }
