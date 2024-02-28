@@ -4,20 +4,25 @@ import com.google.gson.JsonObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.domain.UserPrincipal;
 import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.provider.TokenProvider;
@@ -27,8 +32,12 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
 import java.util.Collections;
 import java.util.List;
 
+import static net.sf.jsqlparser.util.validation.metadata.NamedObject.user;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
 /**
  * @author rafek
@@ -65,7 +74,7 @@ class UserControllerTest implements UserDTOProvider {
         when(userService.getUser(any())).thenReturn(first());
         //then
         mockMvc.perform(MockMvcRequestBuilders.get("/users/user/1")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("User retrieved"))
@@ -81,7 +90,7 @@ class UserControllerTest implements UserDTOProvider {
         when(userService.getUser(any())).thenThrow(new ApiException("There is no such an user at database exists"));
         //then
         mockMvc.perform(MockMvcRequestBuilders.get("/users/user/1")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.reason").value("There is no such an user at database exists"));
@@ -95,7 +104,7 @@ class UserControllerTest implements UserDTOProvider {
         when(userService.getUsers()).thenReturn(List.of(first(), second()));
         //when
         mockMvc.perform(MockMvcRequestBuilders.get("/users/list")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("List of users"))
@@ -111,7 +120,7 @@ class UserControllerTest implements UserDTOProvider {
         when(userService.getUsers()).thenReturn(Collections.emptyList());
         //when
         mockMvc.perform(MockMvcRequestBuilders.get("/users/list")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("List of users"))
@@ -126,7 +135,7 @@ class UserControllerTest implements UserDTOProvider {
         when(userService.getUsers()).thenThrow(new ApiException("There is problem with list of users from database"));
         //when
         mockMvc.perform(MockMvcRequestBuilders.get("/users/list")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.reason").value("There is problem with list of users from database"));
@@ -150,7 +159,7 @@ class UserControllerTest implements UserDTOProvider {
         //when
         mockMvc.perform(MockMvcRequestBuilders.post("/users/register")
                         .content(jsonObject.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .with(SecurityMockMvcRequestPostProcessors.authentication(
                                 new UsernamePasswordAuthenticationToken(1L, null, List.of(
@@ -178,13 +187,47 @@ class UserControllerTest implements UserDTOProvider {
         //when
         mockMvc.perform(MockMvcRequestBuilders.post("/users/register")
                         .content(jsonObject.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .with(SecurityMockMvcRequestPostProcessors.authentication(
                                 new UsernamePasswordAuthenticationToken(1L, null, List.of(
                                         new SimpleGrantedAuthority("USER"))))))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.reason").value("There is already taken that email"));
+        //then
+    }
+
+    @DisplayName("Testing method login(LoginForm loginForm")
+    @Test
+    void it_should_successfully_login_to_application() throws Exception {
+        //given
+        UserDTO mockedUserDTO = first();
+
+        UserPrincipal userPrincipal = mock(UserPrincipal.class);
+        when(userPrincipal.getUserDTO()).thenReturn(mockedUserDTO);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userPrincipal);
+
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("email", "rafekzielinski@wp.pl");
+        jsonObject.addProperty("password", "password");
+
+        //when
+        mockMvc.perform(MockMvcRequestBuilders.post("/users/login")
+                .content(jsonObject.toString())
+                .contentType(APPLICATION_JSON)
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .with(user("rafekzielinski@wp.pl").roles("USER")
+                ))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Login Success"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.user.email").value("rafekzielinski@wp.pl"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.access_token").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.refresh_token").exists());
         //then
     }
 }
