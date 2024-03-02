@@ -43,6 +43,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author rafek
@@ -81,10 +83,10 @@ class UserControllerTest implements UserDTOProvider {
         mockMvc.perform(get("/users/user/1")
                         .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("User retrieved"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.user.firstName").value("Rafał"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.size()").value(1));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("User retrieved"))
+                .andExpect(jsonPath("$.data.user.firstName").value("Rafał"))
+                .andExpect(jsonPath("$.data.size()").value(1));
     }
 
     @DisplayName("Testing method getUser(Long id)")
@@ -97,8 +99,8 @@ class UserControllerTest implements UserDTOProvider {
         mockMvc.perform(get("/users/user/1")
                         .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.reason").value("There is no such an user at database exists"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason").value("There is no such an user at database exists"));
 
     }
 
@@ -111,10 +113,10 @@ class UserControllerTest implements UserDTOProvider {
         mockMvc.perform(get("/users/list")
                         .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("List of users"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.users[0].firstName").value("Rafał"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.users.size()").value(2));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("List of users"))
+                .andExpect(jsonPath("$.data.users[0].firstName").value("Rafał"))
+                .andExpect(jsonPath("$.data.users.size()").value(2));
         //then
     }
 
@@ -127,9 +129,9 @@ class UserControllerTest implements UserDTOProvider {
         mockMvc.perform(get("/users/list")
                         .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("List of users"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.users.size()").value(0));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("List of users"))
+                .andExpect(jsonPath("$.data.users.size()").value(0));
         //then
     }
 
@@ -142,8 +144,8 @@ class UserControllerTest implements UserDTOProvider {
         mockMvc.perform(get("/users/list")
                         .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.reason").value("There is problem with list of users from database"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason").value("There is problem with list of users from database"));
         //then
     }
 
@@ -169,9 +171,9 @@ class UserControllerTest implements UserDTOProvider {
                         .with(SecurityMockMvcRequestPostProcessors.authentication(
                                 new UsernamePasswordAuthenticationToken(1L, null, List.of(
                                         new SimpleGrantedAuthority("USER"))))))
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("User created"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.user.firstName").value("Rafał"));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("User created"))
+                .andExpect(jsonPath("$.data.user.firstName").value("Rafał"));
         //then
     }
 
@@ -197,8 +199,8 @@ class UserControllerTest implements UserDTOProvider {
                         .with(SecurityMockMvcRequestPostProcessors.authentication(
                                 new UsernamePasswordAuthenticationToken(1L, null, List.of(
                                         new SimpleGrantedAuthority("USER"))))))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.reason").value("There is already taken that email"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason").value("There is already taken that email"));
         //then
     }
 
@@ -227,11 +229,11 @@ class UserControllerTest implements UserDTOProvider {
                 .with(csrf())
                 .with(user("rafekzielinski@wp.pl").roles("USER")
                 ))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Login Success"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.user.email").value("rafekzielinski@wp.pl"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.access_token").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.refresh_token").exists());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Login Success"))
+                .andExpect(jsonPath("$.data.user.email").value("rafekzielinski@wp.pl"))
+                .andExpect(jsonPath("$.data.access_token").exists())
+                .andExpect(jsonPath("$.data.refresh_token").exists());
         //then
     }
 
