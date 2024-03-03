@@ -24,6 +24,7 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.domain.HttpResponse;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,6 +67,12 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
                 .build(), status);
     }
 
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<HttpResponse> IllegalArgumentException(IllegalArgumentException exception) {
+        log.error("Hello \n" + exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
+        return createErrorHttpResponse(INTERNAL_SERVER_ERROR, exception.getMessage(), exception);
+    }
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public ResponseEntity<HttpResponse> SQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException exception) {
         log.error(exception.getMessage());
