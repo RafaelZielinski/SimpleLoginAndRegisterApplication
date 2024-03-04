@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -232,6 +233,47 @@ class UserAndRoleControllerTest implements UserControllerProvider {
                 .andExpect(jsonPath("$.data.refresh_token").exists())
                 .andExpect(jsonPath("$.data.refresh_token").value("mockedRefreshToken"))
                 .andExpect(jsonPath("$.data.access_token").value("mockedAccessToken"));
+        //then
+    }
+
+    @DisplayName("Testing method login(LoginForm loginForm")
+    @Test
+    void it_should_throw_excepthion_while_you_gave_wrong_password() throws Exception {
+        //given
+        when(userService.getUserByEmail(any())).thenThrow(new ApiException("There is no such an user at Database exists"));
+        when(roleService.getRoleByUserId(any())).thenReturn(firstRoleDTO());
+
+        //mocking security classes
+        UserPrincipal userPrincipal = new UserPrincipal(firstUser(), firstRole());
+        Authentication authentication = mock(Authentication.class);
+        authentication.setAuthenticated(false);
+        when(authentication.isAuthenticated()).thenReturn(false);
+        when(authentication.getName()).thenReturn("rafekzielinski@wp.pl");
+        when(authentication.getPrincipal()).thenReturn(userPrincipal);
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+
+
+//        when(tokenProvider.createAccessToken(any())).thenReturn("mockedAccessToken");
+//        when(tokenProvider.createRefreshToken(any())).thenReturn("mockedRefreshToken");
+
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("email", "rafekzielinski@wp.pl");
+        jsonObject.addProperty("password", "pass");
+
+        //when
+        mockMvc.perform(post("/users/login")
+                        .content(jsonObject.toString())
+                        .contentType(APPLICATION_JSON)
+                        .with(csrf())
+                        .with(user(userPrincipal)
+                        ))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason").value("There is no such an user at Database exists"))
+                .andExpect(jsonPath("$.data").doesNotExist())
+                .andExpect(jsonPath("$.data.access_token").doesNotExist())
+                .andExpect(jsonPath("$.data.refresh_token").doesNotExist())
+                .andExpect(jsonPath("$.statusCode").value(400));
         //then
     }
 }
