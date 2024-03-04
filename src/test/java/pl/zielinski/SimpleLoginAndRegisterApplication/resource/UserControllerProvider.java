@@ -1,8 +1,13 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.resource;
 
+import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
+import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.dto.RoleDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 
 import java.time.LocalDateTime;
+
+import static java.time.LocalDateTime.now;
 
 /**
  * @author rafek
@@ -10,8 +15,8 @@ import java.time.LocalDateTime;
  * @licence ask rafekzielinski@wp.pl
  * @since 17/02/2024
  */
-public interface UserDTOProvider {
-    default UserDTO first() {
+public interface UserControllerProvider {
+    default UserDTO firstUserDTO() {
         return UserDTO.builder()
                 .id(1L)
                 .firstName("Rafał")
@@ -27,7 +32,7 @@ public interface UserDTOProvider {
                 .build();
     }
 
-    default UserDTO second() {
+    default UserDTO secondUserDTO() {
         return UserDTO.builder()
                 .id(2L)
                 .firstName("Marek")
@@ -43,7 +48,7 @@ public interface UserDTOProvider {
                 .build();
     }
 
-    default UserDTO third() {
+    default UserDTO thirdUserDTO() {
         return UserDTO.builder()
                 .id(3l)
                 .firstName("Edward")
@@ -57,5 +62,17 @@ public interface UserDTOProvider {
                 .roleName("ROLE_SYSADMIN")
                 .permissions("READ:USER:READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER,DELETE:USER,DELETE:CUSTOMER")
                 .build();
+    }
+
+    default RoleDTO firstRoleDTO() {
+        return new RoleDTO(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
+    }
+
+    default User firstUser() {
+        return new User(1L, "Rafał", "Zieliński", "rafekzielinski@wp.pl", 15L, "password", true, true, false, now());
+    }
+
+    default Role firstRole() {
+        return new Role(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
     }
 }
