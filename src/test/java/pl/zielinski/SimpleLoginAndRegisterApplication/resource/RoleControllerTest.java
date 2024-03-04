@@ -24,7 +24,6 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
-import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleType.ROLE_USER;
 
 /**
  * @author rafek
@@ -36,7 +35,7 @@ import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleTyp
 @WebMvcTest(RoleController.class)
 @AutoConfigureMockMvc()
 @ActiveProfiles("test")
-class RoleControllerTest implements RoleDTOProvider {
+class RoleControllerTest implements RoleControllerProvider {
 
     @Autowired
     private MockMvc mockMvc;
