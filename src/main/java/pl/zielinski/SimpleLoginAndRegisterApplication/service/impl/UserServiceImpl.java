@@ -2,9 +2,11 @@ package pl.zielinski.SimpleLoginAndRegisterApplication.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
 import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMapper;
+import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
 
@@ -21,6 +23,7 @@ import java.util.Collection;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository<User> userRepository;
+    private final RoleRepository<Role> roleRepository;
 
     @Override
     public Collection<UserDTO> getUsers() {
@@ -29,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO createUser(User user) {
-        return UserDTOMapper.fromUser(userRepository.create(user));
+        return UserDTOMapper.fromUser(userRepository.create(user), roleRepository.getRoleByUserId(user.getId()));
     }
 
     @Override

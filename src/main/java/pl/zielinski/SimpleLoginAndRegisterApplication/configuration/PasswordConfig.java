@@ -12,7 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  */
 @Configuration
 public class PasswordConfig {
-    private final static int STRENGTH = 20;
+    private final static int STRENGTH = 12;
 
     @Bean
     BCryptPasswordEncoder passwordEncoder() {

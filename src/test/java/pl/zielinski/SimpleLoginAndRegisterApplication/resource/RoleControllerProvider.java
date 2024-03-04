@@ -8,7 +8,7 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.dto.RoleDTO;
  * @licence ask rafekzielinski@wp.pl
  * @since 05/02/2024
  */
-public interface RoleDTOProvider {
+public interface RoleControllerProvider {
 
     default RoleDTO firstRoleDTO() {
         return new RoleDTO(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
