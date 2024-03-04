@@ -4,23 +4,17 @@ import com.google.gson.JsonObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.UserPrincipal;
@@ -30,15 +24,12 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.provider.TokenProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.RoleService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
 import static java.time.LocalDateTime.now;
-import static net.sf.jsqlparser.util.validation.metadata.NamedObject.user;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -52,10 +43,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @licence ask rafekzielinski@wp.pl
  * @since 16/02/2024
  */
-@WebMvcTest
+@WebMvcTest(UserController.class)
 @AutoConfigureMockMvc()
 @ActiveProfiles("test")
-class UserControllerTest implements UserDTOProvider {
+class UserAndRoleControllerTest implements UserControllerProvider {
     @Autowired
     MockMvc mockMvc;
 
@@ -76,9 +67,9 @@ class UserControllerTest implements UserDTOProvider {
     @Test
     void itShould_return_one_UserDTO() throws Exception {
         //given
-        UserDTO expected = first();
+        UserDTO expected = firstUserDTO();
         //when
-        when(userService.getUser(any())).thenReturn(first());
+        when(userService.getUser(any())).thenReturn(firstUserDTO());
         //then
         mockMvc.perform(get("/users/user/1")
                         .contentType(APPLICATION_JSON)
@@ -108,7 +99,7 @@ class UserControllerTest implements UserDTOProvider {
     @Test
     void it_should_return_list_of_two_User_DTO() throws Exception {
         //given
-        when(userService.getUsers()).thenReturn(List.of(first(), second()));
+        when(userService.getUsers()).thenReturn(List.of(firstUserDTO(), secondUserDTO()));
         //when
         mockMvc.perform(get("/users/list")
                         .contentType(APPLICATION_JSON)
@@ -161,7 +152,7 @@ class UserControllerTest implements UserDTOProvider {
         jsonObject.addProperty("age", 44);
 
 
-        when(userService.createUser(ArgumentMatchers.any(User.class))).thenReturn(first());
+        when(userService.createUser(ArgumentMatchers.any(User.class))).thenReturn(firstUserDTO());
 
         //when
         mockMvc.perform(post("/users/register")
@@ -190,7 +181,6 @@ class UserControllerTest implements UserDTOProvider {
 
 
         when(userService.createUser(ArgumentMatchers.any(User.class))).thenThrow(new ApiException("There is already taken that email"));
-
         //when
         mockMvc.perform(post("/users/register")
                         .content(jsonObject.toString())
@@ -208,14 +198,20 @@ class UserControllerTest implements UserDTOProvider {
     @Test
     void it_should_successfully_login_to_application() throws Exception {
         //given
-        Authentication authentication = mockAuthentication();
+        when(userService.getUserByEmail(any())).thenReturn(firstUserDTO());
+        when(roleService.getRoleByUserId(any())).thenReturn(firstRoleDTO());
 
-        UserDTO loggedInUser = first();
-
+        UserPrincipal userPrincipal = new UserPrincipal(firstUser(), firstRole());
+        Authentication authentication = mock(Authentication.class);
+        authentication.setAuthenticated(true);
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getName()).thenReturn("rafekzielinski@wp.pl");
+        when(authentication.getPrincipal()).thenReturn((userPrincipal));
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
 
-//        when(tokenProvider.createAccessToken(any())).thenReturn("mockedAccessToken");
-//        when(tokenProvider.createRefreshToken(any())).thenReturn("mockedRefreshToken");
+
+        when(tokenProvider.createAccessToken(any())).thenReturn("mockedAccessToken");
+        when(tokenProvider.createRefreshToken(any())).thenReturn("mockedRefreshToken");
 
 
         JsonObject jsonObject = new JsonObject();
@@ -227,20 +223,15 @@ class UserControllerTest implements UserDTOProvider {
                 .content(jsonObject.toString())
                 .contentType(APPLICATION_JSON)
                 .with(csrf())
-                .with(user("rafekzielinski@wp.pl").roles("USER")
+                .with(user(userPrincipal)
                 ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Login Success"))
                 .andExpect(jsonPath("$.data.user.email").value("rafekzielinski@wp.pl"))
                 .andExpect(jsonPath("$.data.access_token").exists())
-                .andExpect(jsonPath("$.data.refresh_token").exists());
+                .andExpect(jsonPath("$.data.refresh_token").exists())
+                .andExpect(jsonPath("$.data.refresh_token").value("mockedRefreshToken"))
+                .andExpect(jsonPath("$.data.access_token").value("mockedAccessToken"));
         //then
-    }
-
-    private Authentication mockAuthentication() {
-        User user = new User(1L, "Rafał", "Zieliński", "rafekzielinski@wp.pl", 15L, "password", true, true, false, now());
-        Role role = new Role(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
-        UserPrincipal userPrincipal = new UserPrincipal(user, role);
-        return new UsernamePasswordAuthenticationToken(userPrincipal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
     }
 }
