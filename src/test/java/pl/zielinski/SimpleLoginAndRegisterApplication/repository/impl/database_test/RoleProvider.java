@@ -16,11 +16,13 @@ public interface RoleProvider {
 
     default String fillData() {
         return """
-                INSERT INTO Users (
-                id, first_name, last_name, email, age, password, enabled, non_locked, using_mfa)
-                VALUES(
-                1, 'Rafał', 'Zieliński', 'rafekzielinski@wp.pl', 26,
-                '$2a$20$s521GVdPMTPsNU6tF5sISODRuJQH0rw3A5Fx8xjG8MC1QO60VNIXq', true, true, false);             
+                INSERT INTO ROLES (name, permission)
+                VALUES ('ROLE_USER', 'READ:USER,READ:CUSTOMER'),
+                ('ROLE_MANAGER', 'READ:USER,READ:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER'),
+                ('ROLE_ADMIN', 'READ:USER,READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER'),
+                ('ROLE_SYSADMIN',
+                'READ:USER:READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER,DELETE:USER,DELETE:CUSTOMER');           
                 """;
     }
+
 }
