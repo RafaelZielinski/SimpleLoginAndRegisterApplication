@@ -50,7 +50,7 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
         try {
             return jdbc.queryForObject(SELECT_ROLE_BY_ID, Map.of("id", id), new RoleRowMapper());
         } catch (EmptyResultDataAccessException exception) {
-            throw new ApiException("There is no such a role ");
+            throw new ApiException("There is no such a role");
         } catch (Exception exception) {
             throw new ApiException("An error occurred. Please try again");
         }
