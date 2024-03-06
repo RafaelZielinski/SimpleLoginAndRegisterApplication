@@ -1,4 +1,4 @@
-package pl.zielinski.SimpleLoginAndRegisterApplication.resource;
+package pl.zielinski.SimpleLoginAndRegisterApplication.resource.web_layer_test;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +16,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import pl.zielinski.SimpleLoginAndRegisterApplication.dto.RoleDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.provider.TokenProvider;
+import pl.zielinski.SimpleLoginAndRegisterApplication.resource.RoleController;
+import pl.zielinski.SimpleLoginAndRegisterApplication.resource.web_layer_test.provider.RoleControllerProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.RoleService;
 
 import java.util.Collections;

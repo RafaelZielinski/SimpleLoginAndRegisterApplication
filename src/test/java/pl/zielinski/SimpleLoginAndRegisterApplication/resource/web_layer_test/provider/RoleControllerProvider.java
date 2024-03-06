@@ -1,4 +1,4 @@
-package pl.zielinski.SimpleLoginAndRegisterApplication.resource;
+package pl.zielinski.SimpleLoginAndRegisterApplication.resource.web_layer_test.provider;
 
 import pl.zielinski.SimpleLoginAndRegisterApplication.dto.RoleDTO;
 
