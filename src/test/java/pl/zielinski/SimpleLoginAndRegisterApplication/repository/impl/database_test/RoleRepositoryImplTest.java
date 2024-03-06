@@ -1,5 +1,6 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_test;
 
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
+import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.RoleRepositoryImpl;
 
@@ -58,15 +60,53 @@ class RoleRepositoryImplTest implements RoleProvider{
         }
     }
 
-    @DisplayName("it_should_return_empty_list_method_list()")
+    @DisplayName("testing_method_list()")
     @Test
-    void testList() throws SQLException {
+    void it_should_return_empty_list() throws SQLException {
         //given
         emptyData();
         //when
         Collection<Role> actual = cut.list();
         //then
         assertEquals(0, actual.size());
+    }
+
+    @DisplayName("testing_method_list()")
+    @Test
+    void it_should_return_four_size_list_of_roles() throws SQLException {
+        //given
+        insertData();
+
+        //when
+        Collection<Role> actual = cut.list();
+        //then
+        assertEquals(4, actual.size());
+    }
+
+    @DisplayName("testing_method_get(Long id)")
+    @Test
+    void it_should_return_correct_one_roles() throws SQLException {
+        //given
+        insertData();
+        Long expectedId = 1L;
+        //when
+        Role actual = cut.get(expectedId);
+        //then
+        assertEquals(expectedId, actual.getId());
+        assertEquals("ROLE_USER", actual.getName());
+    }
+
+    @DisplayName("testing_method_get(Long id)")
+    @Test
+    void it_should_throw_exception_there_is_no_such_role() throws SQLException {
+        //given
+        emptyData();
+        Long expectedId = 1L;
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.get(expectedId));
+        //then
+        assertEquals("There is no such a role", actual.getMessage());
+
     }
 
 
