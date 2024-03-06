@@ -1,6 +1,7 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_test;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -16,6 +17,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.*;
@@ -31,7 +33,7 @@ import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTest
 @JdbcTest()
 @AutoConfigureTestDatabase(replace = NONE)
 @Import(RoleRepositoryImpl.class)
-class RoleRepositoryImplTest {
+class RoleRepositoryImplTest implements RoleProvider{
 
     @Autowired
     private RoleRepository<Role> cut;
@@ -40,24 +42,31 @@ class RoleRepositoryImplTest {
     private DataSource dataSource;
 
 
-    @BeforeEach
-    void setUp() throws SQLException {
-        String queryOne = """
-                INSERT INTO Users
-                    (id, first_name, last_name, email, age, password, enabled, non_locked, using_mfa)
-                     VALUES(1, 'Rafał', 'Zieliński', 'rafekzielinski@wp.pl', 26, '$2a$20$s521GVdPMTPsNU6tF5sISODRuJQH0rw3A5Fx8xjG8MC1QO60VNIXq', true, true, false);
-                """;
+    void insertData() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
-            statement.execute(queryOne);
+            statement.execute(deleteData());
+            statement.execute(fillData());
+        }
+    }
 
+    void emptyData() throws SQLException {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute(deleteData());
 
         }
     }
 
+    @DisplayName("it_should_return_empty_list_method_list()")
     @Test
     void testList() throws SQLException {
-
+        //given
+        emptyData();
+        //when
+        Collection<Role> actual = cut.list();
+        //then
+        assertEquals(0, actual.size());
     }
 
 
