@@ -73,8 +73,8 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
             Role role = jdbc.queryForObject(SELECT_ROLE_BY_NAME_QUERY, Map.of("roleName", roleName), new RoleRowMapper());
             jdbc.update(INSERT_ROLE_TO_USER_QUERY, Map.of("userId", userId, "roleId", requireNonNull(role).getId()));
         } catch (EmptyResultDataAccessException exception) {
-            log.error("No Role found by name: {} ", roleName);
-            throw new ApiException("No Role found by name: " + roleName);
+            log.error("No role found by name: {} ", roleName);
+            throw new ApiException("No role found by name: " + roleName);
         } catch (
                 Exception exception) {
             log.error(exception.getMessage());
