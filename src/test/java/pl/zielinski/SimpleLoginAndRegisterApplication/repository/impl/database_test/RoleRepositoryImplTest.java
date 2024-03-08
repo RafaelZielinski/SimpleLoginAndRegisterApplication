@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
@@ -14,9 +15,7 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.RoleReposi
 
 import javax.sql.DataSource;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -74,7 +73,20 @@ class RoleRepositoryImplTest implements RoleProvider{
             statement.execute(deleteDataUserRoles());
             statement.execute(deleteDataRoles());
             statement.execute(deleteDataUser());
+        }
+    }
 
+    private boolean checkUserRolesById(Long userId, Long roleId) throws SQLException {
+        String sql = """
+                SELECT COUNT(*) FROM UserRoles WHERE user_id = ? AND role_id = ?;
+                """;
+        try (Connection connection = dataSource.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, userId);
+            statement.setLong(2, roleId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next();
+            }
         }
     }
 
@@ -165,9 +177,25 @@ class RoleRepositoryImplTest implements RoleProvider{
         emptyData();
         Long expectedId = 1L;
         //when
-        ApiException actual = assertThrows(ApiException.class, () -> cut.getRoleByUserId(expectedId));
+        ApiException actual = assertThrows(ApiException.class, () -> cut.addRoleToUser(expectedId, "ROLE_USER"));
         //then
         assertEquals("No role found by name: ROLE_USER", actual.getMessage());
+    }
+
+    @DisplayName("testing_method_addRoleToUser(Long userId, String roleName)")
+    @Test
+    void it_should_successfully_add_role_to_user() throws SQLException {
+        //given
+        emptyData();
+        insertDataRoles();
+        insertDataUsers();
+        Long expectedId = 1L;
+        //when
+        cut.addRoleToUser(expectedId, "ROLE_USER");
+        boolean isSuccess = checkUserRolesById(1L, 1L);
+        //then
+        assertEquals(true, isSuccess);
+
     }
 
 
