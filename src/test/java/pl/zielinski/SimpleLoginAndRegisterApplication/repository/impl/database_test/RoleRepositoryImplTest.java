@@ -42,6 +42,8 @@ class RoleRepositoryImplTest implements RoleProvider{
     private DataSource dataSource;
 
 
+
+
     void insertDataRoles() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
@@ -149,6 +151,18 @@ class RoleRepositoryImplTest implements RoleProvider{
         //given
         emptyData();
 
+        Long expectedId = 1L;
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.getRoleByUserId(expectedId));
+        //then
+        assertEquals("No role found by name: ROLE_USER", actual.getMessage());
+    }
+
+    @DisplayName("testing_method_addRoleToUser(Long userId, String roleName)")
+    @Test
+    void it_should_throw_exception_there_is_no_role_in_database() throws SQLException {
+        //given
+        emptyData();
         Long expectedId = 1L;
         //when
         ApiException actual = assertThrows(ApiException.class, () -> cut.getRoleByUserId(expectedId));
