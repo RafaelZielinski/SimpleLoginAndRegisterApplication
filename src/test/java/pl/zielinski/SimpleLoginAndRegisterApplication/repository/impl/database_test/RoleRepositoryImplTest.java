@@ -1,7 +1,5 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_test;
 
-import org.hamcrest.Matcher;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,18 +42,36 @@ class RoleRepositoryImplTest implements RoleProvider{
     private DataSource dataSource;
 
 
-    void insertData() throws SQLException {
+    void insertDataRoles() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
-            statement.execute(deleteData());
-            statement.execute(fillData());
+            statement.execute(deleteDataRoles());
+            statement.execute(fillDataRoles());
         }
     }
 
+    void insertDataUsers() throws SQLException {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute(deleteDataUser());
+            statement.execute(fillDataUser());
+        }
+    }
+
+    void insertDataUserRoles() throws SQLException {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute(deleteDataUserRoles());
+            statement.execute(fillUserRoles());
+        }
+    }
     void emptyData() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
-            statement.execute(deleteData());
+            //you can check it out how efficient is way to run sql command via batch method in this statement
+            statement.execute(deleteDataRoles());
+            statement.execute(deleteDataUser());
+            statement.execute(deleteDataRoles());
 
         }
     }
@@ -75,7 +91,7 @@ class RoleRepositoryImplTest implements RoleProvider{
     @Test
     void it_should_return_four_size_list_of_roles() throws SQLException {
         //given
-        insertData();
+        insertDataRoles();
 
         //when
         Collection<Role> actual = cut.list();
@@ -87,7 +103,7 @@ class RoleRepositoryImplTest implements RoleProvider{
     @Test
     void it_should_return_correct_one_roles() throws SQLException {
         //given
-        insertData();
+        insertDataRoles();
         Long expectedId = 1L;
         //when
         Role actual = cut.get(expectedId);
@@ -106,7 +122,23 @@ class RoleRepositoryImplTest implements RoleProvider{
         ApiException actual = assertThrows(ApiException.class, () -> cut.get(expectedId));
         //then
         assertEquals("There is no such a role", actual.getMessage());
+    }
 
+    @DisplayName("testing_method_getRoleByUserId(Long id)")
+    @Test
+    void it_should_return_role_to_user_successfully() throws SQLException {
+        //given
+        insertDataRoles();
+        insertDataUsers();
+        insertDataUserRoles();
+
+        Long expectedId = 1L;
+        //when
+        Role actual = cut.getRoleByUserId(expectedId);
+        //then
+        assertEquals("ROLE_USER", actual.getName());
+        assertEquals("READ:USER,READ:CUSTOMER", actual.getPermission());
+        assertEquals(1L, actual.getId());
     }
 
 
