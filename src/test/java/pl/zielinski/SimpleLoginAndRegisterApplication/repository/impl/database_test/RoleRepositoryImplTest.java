@@ -69,9 +69,9 @@ class RoleRepositoryImplTest implements RoleProvider{
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
             //you can check it out how efficient is way to run sql command via batch method in this statement
+            statement.execute(deleteDataUserRoles());
             statement.execute(deleteDataRoles());
             statement.execute(deleteDataUser());
-            statement.execute(deleteDataRoles());
 
         }
     }
@@ -91,6 +91,7 @@ class RoleRepositoryImplTest implements RoleProvider{
     @Test
     void it_should_return_four_size_list_of_roles() throws SQLException {
         //given
+        emptyData();
         insertDataRoles();
 
         //when
@@ -103,6 +104,7 @@ class RoleRepositoryImplTest implements RoleProvider{
     @Test
     void it_should_return_correct_one_roles() throws SQLException {
         //given
+        emptyData();
         insertDataRoles();
         Long expectedId = 1L;
         //when
@@ -139,6 +141,19 @@ class RoleRepositoryImplTest implements RoleProvider{
         assertEquals("ROLE_USER", actual.getName());
         assertEquals("READ:USER,READ:CUSTOMER", actual.getPermission());
         assertEquals(1L, actual.getId());
+    }
+
+    @DisplayName("testing_method_getRoleByUserId(Long id)")
+    @Test
+    void it_should_throw_exception_there_is_no_role() throws SQLException {
+        //given
+        emptyData();
+
+        Long expectedId = 1L;
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.getRoleByUserId(expectedId));
+        //then
+        assertEquals("No role found by name: ROLE_USER", actual.getMessage());
     }
 
 
