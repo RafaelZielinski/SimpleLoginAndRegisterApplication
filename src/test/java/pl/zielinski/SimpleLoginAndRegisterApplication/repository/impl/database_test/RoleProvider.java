@@ -51,4 +51,20 @@ public interface RoleProvider {
                 """;
     }
 
+    default String fillFourUsers() {
+        return """
+                INSERT INTO Users(id, first_name, last_name, email, age, password, enabled, non_locked, using_mfa)
+                VALUES(1, 'Rafał', 'Zieliński', 'rafekzielinski@wp.pl', 26, 'password1', true, true, false);
+                
+                INSERT INTO Users(id, first_name, last_name, email, age, password, enabled, non_locked, using_mfa)
+                VALUES(2, 'Kamil', 'Górski', 'kamilgorski@wp.pl', 28, 'password2', true, true, false);
+                
+                INSERT INTO Users(id, first_name, last_name, email, age, password, enabled, non_locked, using_mfa)
+                VALUES(3, 'Marek', 'Chytła', 'marekchytla@wp.pl', 33, 'password3', true, true, false);
+                
+                INSERT INTO Users(id, first_name, last_name, email, age, password, enabled, non_locked, using_mfa)
+                VALUES(4, 'Sabina', 'Woźna', 'sabinawozna@wp.pl', 55, 'password4', true, true, false);
+                """;
+    }
+
 }
