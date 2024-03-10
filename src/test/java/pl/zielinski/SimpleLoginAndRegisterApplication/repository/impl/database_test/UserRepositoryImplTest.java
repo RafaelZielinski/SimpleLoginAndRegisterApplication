@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import pl.zielinski.SimpleLoginAndRegisterApplication.configuration.PasswordConfig;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.RoleRepositoryImpl;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.UserRepositoryImpl;
@@ -35,8 +36,7 @@ import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTest
 @JdbcTest()
 @AutoConfigureTestDatabase(replace = NONE)
 @Import({UserRepositoryImpl.class, PasswordConfig.class, RoleRepositoryImpl.class})
-
-class UserRepositoryImplTest implements RoleProvider{
+class UserRepositoryImplTest implements RoleProvider {
 
     @Autowired
     private UserRepository<User> cut;
@@ -79,10 +79,18 @@ class UserRepositoryImplTest implements RoleProvider{
         assertEquals("Rafał", actual.getFirstName());
     }
 
-
-
-
-
+    @DisplayName("Testing method getUserByEmail(String email)")
+    @Test
+    void it_should_throw_api_exception_no_user_found() throws SQLException {
+        //given
+        insertFourDataRoles();
+        insertFourUserRoles();
+        String expectedEmail = "karolinazieba@wp.pl";
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.getUserByEmail(expectedEmail));
+        //then
+        assertEquals("There is no such an user at database exists", actual.getMessage());
+    }
 
 
 }
