@@ -7,19 +7,18 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.RoleRepositoryImpl;
 
 import javax.sql.DataSource;
-
 import java.sql.*;
 import java.util.Collection;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE;
 
 /**
  * @author rafek
@@ -32,15 +31,13 @@ import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTest
 @JdbcTest()
 @AutoConfigureTestDatabase(replace = NONE)
 @Import(RoleRepositoryImpl.class)
-class RoleRepositoryImplTest implements RoleProvider{
+class RoleRepositoryImplTest implements RoleProvider {
 
     @Autowired
     private RoleRepository<Role> cut;
 
     @Autowired
     private DataSource dataSource;
-
-
 
 
     void insertDataRoles() throws SQLException {
@@ -66,6 +63,7 @@ class RoleRepositoryImplTest implements RoleProvider{
             statement.execute(fillUserRoles());
         }
     }
+
     void emptyData() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
@@ -81,7 +79,7 @@ class RoleRepositoryImplTest implements RoleProvider{
                 SELECT COUNT(*) FROM UserRoles WHERE user_id = ? AND role_id = ?;
                 """;
         try (Connection connection = dataSource.getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, userId);
             statement.setLong(2, roleId);
             try (ResultSet resultSet = statement.executeQuery()) {
