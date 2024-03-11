@@ -1,5 +1,7 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_test;
 
+import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+
 /**
  * @author rafek
  * @version 1.0
@@ -65,6 +67,21 @@ public interface RoleProvider {
                 INSERT INTO Users(id, first_name, last_name, email, age, password, enabled, non_locked, using_mfa)
                 VALUES(4, 'Sabina', 'Woźna', 'sabinawozna@wp.pl', 55, 'password4', true, true, false);
                 """;
+    }
+
+
+    default User afterUpdating() {
+        return User.builder()
+                .id(1L)
+                .firstName("Czerepach")
+                .lastName("Kieroński")
+                .email("czerepachkieronski@wp.pl")
+                .password("butter")
+                .age(28L)
+                .enabled(false)
+                .isNotLocked(false)
+                .isUsingMfa(true)
+                .build();
     }
 
 }
