@@ -55,6 +55,13 @@ class UserRepositoryImplTest implements RoleProvider {
         }
     }
 
+    void deleteUsers() throws SQLException {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute(deleteDataUser());
+        }
+    }
+
     void insertFourUserRoles() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
@@ -109,6 +116,24 @@ class UserRepositoryImplTest implements RoleProvider {
         assertEquals("Czerepach", actual.getFirstName());
         assertEquals("password1", actual.getPassword());
     }
+
+    @DisplayName("Testing method updateuser(User user)")
+    @Test
+    void it_should_throw_exception_not_found_user() throws SQLException {
+        //given
+        insertFourDataRoles();
+        deleteUsers();
+
+        User afterUpdated = afterUpdating();
+
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.update(afterUpdated));
+        //then
+        assertEquals("An error occurred. Please try again.", actual.getMessage());
+
+    }
+
+
 
 
 }

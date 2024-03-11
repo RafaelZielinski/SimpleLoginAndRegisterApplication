@@ -116,6 +116,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             jdbc.update(UPDATE_USER_DATA_QUERY, getSqlParametersUpdateUserSource(data));
             return get(data.getId());
         } catch (EmptyResultDataAccessException exception) {
+            log.error("No user found by id" + data.getId());
             throw new ApiException("No user found by id: " + data.getId());
         } catch (Exception exception) {
             log.error(exception.getMessage());
