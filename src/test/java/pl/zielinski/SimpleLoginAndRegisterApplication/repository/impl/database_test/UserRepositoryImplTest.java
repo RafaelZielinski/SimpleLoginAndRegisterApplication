@@ -63,7 +63,7 @@ class UserRepositoryImplTest implements RoleProvider {
         }
     }
 
-    @DisplayName("Testing method getUserByEmail")
+    @DisplayName("Testing method getUserByEmail(String email)")
     @Test
     void it_should_return_success_user() throws SQLException {
         //given
@@ -90,6 +90,24 @@ class UserRepositoryImplTest implements RoleProvider {
         ApiException actual = assertThrows(ApiException.class, () -> cut.getUserByEmail(expectedEmail));
         //then
         assertEquals("There is no such an user at database exists", actual.getMessage());
+    }
+
+    @DisplayName("Testing method updateuser(User user)")
+    @Test
+    void it_should_return_properly_changed_user_in_database() throws SQLException {
+        //given
+        insertFourDataRoles();
+        insertFourUserRoles();
+        User afterUpdated = afterUpdating();
+
+        //when
+        User actual = cut.update(afterUpdated);
+        //then
+        assertEquals("czerepachkieronski@wp.pl", actual.getEmail());
+        assertEquals("Kieroński", actual.getLastName());
+        assertEquals(1L, actual.getId());
+        assertEquals("Czerepach", actual.getFirstName());
+        assertEquals("password1", actual.getPassword());
     }
 
 
