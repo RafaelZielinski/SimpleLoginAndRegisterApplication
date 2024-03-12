@@ -147,7 +147,18 @@ class UserRepositoryImplTest implements RoleProvider {
         assertEquals("password1", actual.getPassword());
     }
 
-
+    @DisplayName("Testing method get(Long id)")
+    @Test
+    void it_should_throw_exception_there_is_no_user_found_from_database() throws SQLException {
+        //given
+        insertFourDataRoles();
+        deleteUsers();
+        Long expectedId = 1L;
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.get(expectedId));
+        //then
+        assertEquals("There is no such an user at database exists", actual.getMessage());
+    }
 
 
 
