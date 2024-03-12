@@ -21,6 +21,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE;
@@ -159,6 +160,18 @@ class UserRepositoryImplTest implements RoleProvider {
         //then
         assertEquals("There is no such an user at database exists", actual.getMessage());
     }
+    @DisplayName("Testing method list()")
+    @Test
+    void it_should_return_empty_user_list() throws SQLException {
+        //given
+        insertFourDataRoles();
+        deleteUsers();
+        //when
+        Collection<User> actual = cut.list();
+        //then
+        assertTrue(actual.isEmpty());
+    }
+
 
 
 
