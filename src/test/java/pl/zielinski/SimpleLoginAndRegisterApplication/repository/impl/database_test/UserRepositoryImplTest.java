@@ -117,21 +117,37 @@ class UserRepositoryImplTest implements RoleProvider {
         assertEquals("password1", actual.getPassword());
     }
 
-    @DisplayName("Testing method updateuser(User user)")
+    @DisplayName("Testing method updateUser(User user)")
     @Test
     void it_should_throw_exception_not_found_user() throws SQLException {
         //given
         insertFourDataRoles();
         deleteUsers();
-
         User afterUpdated = afterUpdating();
-
         //when
         ApiException actual = assertThrows(ApiException.class, () -> cut.update(afterUpdated));
         //then
         assertEquals("An error occurred. Please try again.", actual.getMessage());
-
     }
+
+    @DisplayName("Testing method get(Long id)")
+    @Test
+    void it_should_return_user_from_database() throws SQLException {
+        //given
+        insertFourDataRoles();
+        insertFourUserRoles();
+        Long expectedId = 1L;
+        //when
+        User actual = cut.get(expectedId);
+        //then
+        assertEquals("rafekzielinski@wp.pl", actual.getEmail());
+        assertEquals("Zieliński", actual.getLastName());
+        assertEquals(1L, actual.getId());
+        assertEquals("Rafał", actual.getFirstName());
+        assertEquals("password1", actual.getPassword());
+    }
+
+
 
 
 
