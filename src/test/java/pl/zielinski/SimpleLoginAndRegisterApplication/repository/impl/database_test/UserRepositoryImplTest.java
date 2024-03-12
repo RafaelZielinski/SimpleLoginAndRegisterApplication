@@ -2,7 +2,6 @@ package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
@@ -63,7 +62,7 @@ class UserRepositoryImplTest implements RoleProvider {
         }
     }
 
-    void insertFourUserRoles() throws SQLException {
+    void insertFourUsers() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
             statement.execute(deleteDataUser());
@@ -76,7 +75,7 @@ class UserRepositoryImplTest implements RoleProvider {
     void it_should_return_success_user() throws SQLException {
         //given
         insertFourDataRoles();
-        insertFourUserRoles();
+        insertFourUsers();
         String expectedEmail = "rafekzielinski@wp.pl";
         //when
         User actual = cut.getUserByEmail(expectedEmail);
@@ -92,7 +91,7 @@ class UserRepositoryImplTest implements RoleProvider {
     void it_should_throw_api_exception_no_user_found() throws SQLException {
         //given
         insertFourDataRoles();
-        insertFourUserRoles();
+        insertFourUsers();
         String expectedEmail = "karolinazieba@wp.pl";
         //when
         ApiException actual = assertThrows(ApiException.class, () -> cut.getUserByEmail(expectedEmail));
@@ -105,7 +104,7 @@ class UserRepositoryImplTest implements RoleProvider {
     void it_should_return_properly_changed_user_in_database() throws SQLException {
         //given
         insertFourDataRoles();
-        insertFourUserRoles();
+        insertFourUsers();
         User afterUpdated = afterUpdating();
 
         //when
@@ -136,7 +135,7 @@ class UserRepositoryImplTest implements RoleProvider {
     void it_should_return_user_from_database() throws SQLException {
         //given
         insertFourDataRoles();
-        insertFourUserRoles();
+        insertFourUsers();
         Long expectedId = 1L;
         //when
         User actual = cut.get(expectedId);
@@ -172,6 +171,17 @@ class UserRepositoryImplTest implements RoleProvider {
         assertTrue(actual.isEmpty());
     }
 
+    @DisplayName("Testing method list()")
+    @Test
+    void it_should_return_four_users_list() throws SQLException {
+        //given
+        insertFourDataRoles();
+        insertFourUsers();
+        //when
+        Collection<User> actual = cut.list();
+        //then
+        assertEquals(4, actual.size());
+    }
 
 
 
