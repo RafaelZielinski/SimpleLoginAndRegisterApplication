@@ -183,6 +183,25 @@ class UserRepositoryImplTest implements RoleProvider {
         assertEquals(4, actual.size());
     }
 
+    @DisplayName("Testing method create(User user)")
+    @Test
+    void it_should_create_one_user_from_database() throws SQLException {
+        //given
+        insertFourDataRoles();
+        deleteUsers();
+        User user = beforeUpdating();
+        //when
+        User actual = cut.create(user);
+        //then
+        assertEquals(1L, actual.getId());
+        assertEquals("Rafał", actual.getFirstName());
+        assertEquals("Zieliński", actual.getLastName());
+        assertEquals(27L, actual.getAge());
+        assertEquals(true, actual.isEnabled());
+        assertEquals(true, actual.isEnabled());
+        assertEquals(false, actual.isUsingMfa());
+    }
+
 
 
 
