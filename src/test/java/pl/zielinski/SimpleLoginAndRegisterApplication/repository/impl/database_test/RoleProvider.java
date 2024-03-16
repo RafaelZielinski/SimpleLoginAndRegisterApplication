@@ -84,4 +84,18 @@ public interface RoleProvider {
                 .build();
     }
 
+    default User beforeUpdating() {
+        return User.builder()
+                .id(1L)
+                .firstName("Rafał")
+                .lastName("Zieliński")
+                .email("rafekzielinski@wp.pl")
+                .password("password")
+                .age(27L)
+                .enabled(true)
+                .isNotLocked(true)
+                .isUsingMfa(false)
+                .build();
+    }
+
 }
