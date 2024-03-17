@@ -202,6 +202,19 @@ class UserRepositoryImplTest implements RoleProvider {
         assertEquals(false, actual.isUsingMfa());
     }
 
+    @DisplayName("Testing method create(User user)")
+    @Test
+    void it_should_throw_exception_there_is_email_already_in_database_during_creating_user() throws SQLException {
+        //given
+        insertFourDataRoles();
+        insertFourUsers();
+        User user = beforeUpdating();
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.create(user));
+        //then
+        assertEquals("There is already taken that email", actual.getMessage() );
+    }
+
 
 
 
