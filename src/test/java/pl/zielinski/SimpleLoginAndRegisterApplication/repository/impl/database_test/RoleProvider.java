@@ -86,7 +86,6 @@ public interface RoleProvider {
 
     default User beforeUpdating() {
         return User.builder()
-                .id(1L)
                 .firstName("Rafał")
                 .lastName("Zieliński")
                 .email("rafekzielinski@wp.pl")

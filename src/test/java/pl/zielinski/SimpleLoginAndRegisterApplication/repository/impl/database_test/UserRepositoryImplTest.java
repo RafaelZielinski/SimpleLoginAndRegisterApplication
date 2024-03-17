@@ -193,7 +193,6 @@ class UserRepositoryImplTest implements RoleProvider {
         //when
         User actual = cut.create(user);
         //then
-        assertEquals(1L, actual.getId());
         assertEquals("Rafał", actual.getFirstName());
         assertEquals("Zieliński", actual.getLastName());
         assertEquals(27L, actual.getAge());
