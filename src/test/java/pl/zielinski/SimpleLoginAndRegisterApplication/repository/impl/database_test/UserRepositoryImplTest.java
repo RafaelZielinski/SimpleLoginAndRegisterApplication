@@ -196,9 +196,9 @@ class UserRepositoryImplTest implements RoleProvider {
         assertEquals("Rafał", actual.getFirstName());
         assertEquals("Zieliński", actual.getLastName());
         assertEquals(27L, actual.getAge());
-        assertEquals(true, actual.isEnabled());
-        assertEquals(true, actual.isEnabled());
-        assertEquals(false, actual.isUsingMfa());
+        assertTrue(actual.isEnabled());
+        assertTrue(actual.isNotLocked());
+        assertFalse(actual.isUsingMfa());
     }
 
     @DisplayName("Testing method create(User user)")
