@@ -85,7 +85,7 @@ class RoleRepositoryImplTest implements RoleProvider{
         //when
         Exception actual = assertThrows(ApiException.class, () -> roleRepository.get(roleId));
         //then
-        assertEquals("There is no such a role ", actual.getMessage());
+        assertEquals("There is no such a role", actual.getMessage());
     }
 
     //testing method list()
@@ -206,7 +206,7 @@ class RoleRepositoryImplTest implements RoleProvider{
         //when
         ApiException actual = assertThrows(ApiException.class, () -> roleRepository.addRoleToUser(1L, ROLE_USER.name()));
         //then
-        assertEquals("No Role found by name: " + ROLE_USER.name(), actual.getMessage());
+        assertEquals("No role found by name: " + ROLE_USER.name(), actual.getMessage());
         Mockito.verify(jdbc, times(1)).queryForObject(anyString(), anyMap(), any(RoleRowMapper.class));
         Mockito.verify(jdbc, never())
                 .update(anyString(), anyMap());
