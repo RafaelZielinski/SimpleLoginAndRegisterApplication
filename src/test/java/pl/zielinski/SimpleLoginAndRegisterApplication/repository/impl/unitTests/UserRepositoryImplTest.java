@@ -266,7 +266,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
 
         ApiException actual = assertThrows(ApiException.class, () -> userRepository.getUserByEmail(email));
         //then
-        assertEquals("There is no such an user at Database exists", actual.getMessage());
+        assertEquals("There is no such an user at database exists", actual.getMessage());
     }
 
     //testing User getUserByEmail(String email)

@@ -116,6 +116,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             jdbc.update(UPDATE_USER_DATA_QUERY, getSqlParametersUpdateUserSource(data));
             return get(data.getId());
         } catch (EmptyResultDataAccessException exception) {
+            log.error("No user found by id" + data.getId());
             throw new ApiException("No user found by id: " + data.getId());
         } catch (Exception exception) {
             log.error(exception.getMessage());
@@ -142,7 +143,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             return jdbc.queryForObject(SELECT_USER_BY_EMAIL_QUERY, Map.of("email", email), new UserRowMapper());
         } catch (EmptyResultDataAccessException exception) {
             log.error("There is no such user with email {}", email);
-            throw new ApiException("There is no such an user at Database exists");
+            throw new ApiException("There is no such an user at database exists");
         } catch (Exception exception) {
             log.error("An a problem occured");
             throw new ApiException("An error occured");
