@@ -10,6 +10,12 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
  */
 public interface RoleProvider {
 
+    default String chooseUserByUserIdFromAccountVerifications() {
+        return """
+                SELECT * FROM Users u JOIN AccountVerifications av ON u.id = av.user_id WHERE u.id = ?;
+                """;
+    }
+
     default String deleteDataRoles() {
         return """
                 DELETE FROM Roles;
