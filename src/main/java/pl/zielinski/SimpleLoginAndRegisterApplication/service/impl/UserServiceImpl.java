@@ -49,4 +49,9 @@ public class UserServiceImpl implements UserService {
     public UserDTO getUser(Long id) {
         return UserDTOMapper.fromUser(userRepository.get(id));
     }
+
+    @Override
+    public UserDTO verifyAccountKey(String key) {
+        return UserDTOMapper.fromUser(userRepository.verifyAccountKey(key));
+    }
 }
