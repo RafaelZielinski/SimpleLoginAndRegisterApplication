@@ -70,6 +70,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         log.info("Adding user {} ", user);
         roleRepository.addRoleToUser(user.getId(), ROLE_USER.name());
         String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
+        log.info(verificationUrl);
         jdbc.update(INSERT_ACCOUNT_VERIFICATION_URL_QUERY, Map.of("userId", user.getId(), "url", verificationUrl));
         //for now there is no mechanism of sending activation link to email
         user.setEnabled(false);
@@ -78,7 +79,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     }
 
     private String getVerificationUrl(String key, String type) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/verify/" + type + "/" + key).toUriString();
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/users/verify/" + type + "/" + key).toUriString();
     }
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
