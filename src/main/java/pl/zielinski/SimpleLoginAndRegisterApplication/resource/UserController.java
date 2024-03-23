@@ -57,8 +57,6 @@ public class UserController {
 
     @PostMapping("/register")
     ResponseEntity<HttpResponse> register(@RequestBody @Valid User user) {
-        log.error("error");
-        log.info("error");
         UserDTO userDTO = userService.createUser(user);
         return new ResponseEntity<>(
                 HttpResponse.builder()

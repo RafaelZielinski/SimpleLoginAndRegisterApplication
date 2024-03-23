@@ -15,6 +15,6 @@ public class UserQuery {
     public static final String COUNT_USER_EMAIL_QUERY = "SELECT COUNT(*) FROM Users WHERE email = :email";
     public static final String INSERT_ACCOUNT_VERIFICATION_URL_QUERY = "INSERT INTO AccountVerifications (user_id, url) VALUES (:userId, :url)";
     public static final String SELECT_USER_BY_ACCOUNT_URL_QUERY = "SELECT * FROM Users WHERE id = (SELECT user_id FROM AccountVerifications WHERE url = :url)";
-    public static final String DELETE_USER_IN_ACCOUNT_VERIFICATIONS_BY_KEY_QUERY = "DELETE * FROM AccountVerifications WHERE key = :key;";
+    public static final String DELETE_USER_IN_ACCOUNT_VERIFICATIONS_BY_KEY_QUERY = "DELETE FROM AccountVerifications WHERE url = :key";
 
 }
