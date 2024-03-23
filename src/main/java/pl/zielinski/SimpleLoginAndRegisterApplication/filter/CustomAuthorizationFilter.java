@@ -40,6 +40,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     private final String[] PUBLIC_ROUTES = {
             "/users/login/**",
             "/users/register/**",
+            "/users/verify/account/**",
             "/roles/list"
     };
 
