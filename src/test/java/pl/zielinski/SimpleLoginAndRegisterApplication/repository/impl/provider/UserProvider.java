@@ -24,4 +24,14 @@ public interface UserProvider {
                 "password", true, true, false,
                 LocalDateTime.of(2024, 1, 29, 6, 30, 3, 173333900));
     }
+
+    default User thirdUser() {
+        return new User(
+                3L, "Marek", "Staśko", "marek.stasko69@wp.pl", 15L,
+                "password", false, true, false,
+                LocalDateTime.of(2024, 1, 29, 6, 30, 3, 173333900));
+    }
+
+
+
 }
