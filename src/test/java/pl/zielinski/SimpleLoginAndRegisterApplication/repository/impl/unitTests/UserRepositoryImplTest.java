@@ -29,11 +29,13 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
 
 import java.util.*;
 
+import static java.util.Map.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.UDPATE_USER_ENABLED_QUERY;
 
 /**
  * @author rafek
@@ -336,6 +338,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         User actual = cut.verifyAccountKey("key");
         //then
         assertEquals(expected.isEnabled(), actual.isEnabled());
+        verify(jdbc).update(eq(UDPATE_USER_ENABLED_QUERY), eq(of("enabled", true, "id", 3L)));
     }
 
     private static MockHttpServletRequest getMockHttpServletRequest() {
