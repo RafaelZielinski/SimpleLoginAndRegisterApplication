@@ -23,7 +23,6 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
-import pl.zielinski.SimpleLoginAndRegisterApplication.utils.VerificationUrlBuilder;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -53,7 +52,7 @@ import static pl.zielinski.SimpleLoginAndRegisterApplication.query.UserQuery.*;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class UserRepositoryImpl implements UserRepository<User>, UserDetailsService, VerificationUrlBuilder {
+public class UserRepositoryImpl implements UserRepository<User>, UserDetailsService {
     private final NamedParameterJdbcTemplate jdbc;
     private final BCryptPasswordEncoder encoder;
     private final RoleRepository<Role> roleRepository;
@@ -70,7 +69,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         user.setId(requireNonNull(key.getKey()).longValue());
         log.info("Adding user {} ", user);
         roleRepository.addRoleToUser(user.getId(), ROLE_USER.name());
-        String verificationUrl = buildVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
+        String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
         log.info(verificationUrl);
         jdbc.update(INSERT_ACCOUNT_VERIFICATION_URL_QUERY, Map.of("userId", user.getId(), "url", verificationUrl));
         //for now there is no mechanism of sending activation link to email
@@ -79,11 +78,9 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         return user;
     }
 
-    @Override
-    public String buildVerificationUrl(String key, String type) {
+    private String getVerificationUrl(String key, String type) {
         return ServletUriComponentsBuilder.fromCurrentContextPath().path("/users/verify/" + type + "/" + key).toUriString();
     }
-
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = getUserByEmail(email);
@@ -176,7 +173,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     @Override
     public User verifyAccountKey(String key) {
         try {
-            User user = jdbc.queryForObject(SELECT_USER_BY_ACCOUNT_URL_QUERY, of("url", buildVerificationUrl(key, ACCOUNT.getType())), new UserRowMapper());
+            User user = jdbc.queryForObject(SELECT_USER_BY_ACCOUNT_URL_QUERY, of("url", getVerificationUrl(key, ACCOUNT.getType())), new UserRowMapper());
             jdbc.update(UDPATE_USER_ENABLED_QUERY, of("enabled", true, "id", user.getId()));
             //I choose to delete after this operation
             jdbc.update(DELETE_USER_IN_ACCOUNT_VERIFICATIONS_BY_KEY_QUERY, Map.of("key", key));
