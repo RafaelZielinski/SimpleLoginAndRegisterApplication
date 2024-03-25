@@ -125,7 +125,6 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         //given
         String email = "rafekzielinski@wp.pl";
         User user = firstUser();
-        Role role = firstRole();
         when(jdbc.queryForObject(Mockito.anyString(), Mockito.anyMap(), any(UserRowMapper.class)))
                 .thenReturn(user);
         when(roleRepository.get(1L))
