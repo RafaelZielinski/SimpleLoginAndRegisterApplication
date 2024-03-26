@@ -16,11 +16,17 @@ public interface RoleProvider {
                 """;
     }
 
+    default String deleteDataAccountVerification() {
+        return """
+                DELETE FROM AccountVerifications
+                """;
+    }
+
     default String fillDataAccountVerifications() {
         return """
-                INSERT INTO AccountVerifications(id, user_id, url) VALUES(1, 3, 'key1');
-                INSERT INTO AccountVerifications(id, user_id, url) VALUES(2, 2, 'key2');
-                INSERT INTO AccountVerifications(id, user_id, url) VALUES(3, 1, 'key3');
+                INSERT INTO AccountVerifications(id, user_id, url) VALUES(1, 3, 'http://localhost/users/verify/account/key1');
+                INSERT INTO AccountVerifications(id, user_id, url) VALUES(2, 2, 'http://localhost/users/verify/account/key2');
+                INSERT INTO AccountVerifications(id, user_id, url) VALUES(3, 1, 'http://localhost/users/verify/account/key3');
                 """;
     }
     default String deleteDataRoles() {
