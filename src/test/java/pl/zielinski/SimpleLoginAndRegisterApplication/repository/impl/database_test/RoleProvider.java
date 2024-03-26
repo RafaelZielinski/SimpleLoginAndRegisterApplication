@@ -16,6 +16,13 @@ public interface RoleProvider {
                 """;
     }
 
+    default String fillDataAccountVerifications() {
+        return """
+                INSERT INTO AccountVerifications(id, user_id, url) VALUES(1, 3, 'key1');
+                INSERT INTO AccountVerifications(id, user_id, url) VALUES(2, 2, 'key2');
+                INSERT INTO AccountVerifications(id, user_id, url) VALUES(3, 1, 'key3');
+                """;
+    }
     default String deleteDataRoles() {
         return """
                 DELETE FROM Roles;
