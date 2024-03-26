@@ -199,6 +199,8 @@ class UserRepositoryImplTest implements RoleProvider {
     @Test
     void it_should_create_one_user_from_database() throws SQLException {
         //given
+        MockHttpServletRequest request = getMockHttpServletRequest();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
         insertFourDataRoles();
         deleteUsers();
         User user = beforeUpdating();
@@ -208,7 +210,7 @@ class UserRepositoryImplTest implements RoleProvider {
         assertEquals("Rafał", actual.getFirstName());
         assertEquals("Zieliński", actual.getLastName());
         assertEquals(27L, actual.getAge());
-        assertTrue(actual.isEnabled());
+        assertFalse(actual.isEnabled());
         assertTrue(actual.isNotLocked());
         assertFalse(actual.isUsingMfa());
     }
