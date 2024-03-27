@@ -243,6 +243,21 @@ class UserRepositoryImplTest implements RoleProvider {
         assertEquals(actual.getId(), 3L);
     }
 
+    @DisplayName("Testing method verifyAccountKey(String key)")
+    @Test
+    void it_should_verify_account_with_fail_and_throw_this_link_is_not_valid() throws SQLException {
+        //given
+        MockHttpServletRequest request = getMockHttpServletRequest();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+        insertFourUsers();
+        insertFourDataRoles();
+        insertThreeAccountVerification();
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.verifyAccountKey("key3"));
+        //then
+        assertEquals("This link is not valid.", actual.getMessage());
+    }
+
     private static MockHttpServletRequest getMockHttpServletRequest() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setScheme("http");
