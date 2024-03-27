@@ -2,22 +2,22 @@ package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.unitTests
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
@@ -29,11 +29,13 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
 
 import java.util.*;
 
+import static java.util.Map.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.UDPATE_USER_ENABLED_QUERY;
 
 /**
  * @author rafek
@@ -53,9 +55,8 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
     @Mock
     BCryptPasswordEncoder encoder;
 
-
     @InjectMocks
-    UserRepositoryImpl userRepository;
+    UserRepositoryImpl cut;
 
     @BeforeEach
     public void setUp() {
@@ -69,7 +70,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.query(anyString(), any(UserRowMapper.class)))
                 .thenReturn(Collections.emptyList());
         //when
-        Collection<User> actual = userRepository.list();
+        Collection<User> actual = cut.list();
         //then
         assertEquals(actual.size(), 0);
     }
@@ -82,7 +83,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.query(anyString(), any(UserRowMapper.class)))
                 .thenReturn(List.of(expected));
         //when
-        Collection<User> actual = userRepository.list();
+        Collection<User> actual = cut.list();
         //then
         assertEquals(actual.size(), 1);
         assertEquals(actual.stream().findFirst().get().getFirstName(), expected.getFirstName());
@@ -99,7 +100,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.query(anyString(), any(UserRowMapper.class)))
                 .thenReturn(List.of(expected1, expected2));
         //when
-        Collection<User> actual = userRepository.list();
+        Collection<User> actual = cut.list();
         //then
         assertEquals(actual.size(), 2);
         assertThat(actual).containsExactlyInAnyOrderElementsOf(List.of(expected1, expected2));
@@ -112,7 +113,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.query(anyString(), any(UserRowMapper.class)))
                 .thenThrow(NullPointerException.class);
         //when
-        ApiException actual = assertThrows(ApiException.class, () -> userRepository.list());
+        ApiException actual = assertThrows(ApiException.class, () -> cut.list());
         //then
         assertEquals("There is problem with list of users from database", actual.getMessage());
     }
@@ -124,13 +125,12 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         //given
         String email = "rafekzielinski@wp.pl";
         User user = firstUser();
-        Role role = firstRole();
         when(jdbc.queryForObject(Mockito.anyString(), Mockito.anyMap(), any(UserRowMapper.class)))
                 .thenReturn(user);
         when(roleRepository.get(1L))
                 .thenReturn(firstRole());
         //when
-        UserDetails actual = userRepository.loadUserByUsername(email);
+        UserDetails actual = cut.loadUserByUsername(email);
         //then
         assertEquals(actual.getUsername(), email);
     }
@@ -143,7 +143,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.queryForObject(Mockito.anyString(), Mockito.anyMap(), any(UserRowMapper.class)))
                 .thenReturn(null);
         //when
-        Exception actual = assertThrows(UsernameNotFoundException.class, () -> userRepository.loadUserByUsername(email));
+        Exception actual = assertThrows(UsernameNotFoundException.class, () -> cut.loadUserByUsername(email));
         //then
         assertEquals(actual.getMessage(), "User not found exception");
     }
@@ -158,7 +158,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
                 .thenReturn(expected);
         //when
-        User actual = userRepository.get(id);
+        User actual = cut.get(id);
         //then
         assertEquals(expected.toString(), actual.toString());
     }
@@ -171,7 +171,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
                 .thenThrow(EmptyResultDataAccessException.class);
         //when
-        ApiException actual = assertThrows(ApiException.class, () -> userRepository.get(id));
+        ApiException actual = assertThrows(ApiException.class, () -> cut.get(id));
         //then
         assertEquals("There is no such an user at database exists", actual.getMessage());
     }
@@ -184,7 +184,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
                 .thenThrow(ApiException.class);
         //when
-        ApiException actual = assertThrows(ApiException.class, () -> userRepository.get(id));
+        ApiException actual = assertThrows(ApiException.class, () -> cut.get(id));
         //then
         assertEquals("An error occurred", actual.getMessage());
     }
@@ -202,7 +202,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(encoder.encode(anyString()))
                 .thenReturn("password");
         //when
-        User actual = userRepository.update(asArgument);
+        User actual = cut.update(asArgument);
         //then
         Mockito.verify(jdbc, times(1)).update(anyString(), any(SqlParameterSource.class));
         assertEquals(expected.toString(), actual.toString());
@@ -219,7 +219,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.update(anyString(), any(SqlParameterSource.class)))
                 .thenThrow(EmptyResultDataAccessException.class);
         //when
-        ApiException actual = assertThrows(ApiException.class, () -> userRepository.update(asArgument));
+        ApiException actual = assertThrows(ApiException.class, () -> cut.update(asArgument));
         //then
         assertEquals("No user found by id: " + asArgument.getId(), actual.getMessage());
     }
@@ -234,7 +234,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.update(anyString(), any(SqlParameterSource.class)))
                 .thenThrow(EmptyResultDataAccessException.class);
         //when
-        ApiException actual = assertThrows(ApiException.class, () -> userRepository.update(asArgument));
+        ApiException actual = assertThrows(ApiException.class, () -> cut.update(asArgument));
         //then
         assertEquals("An error occurred. Please try again.", actual.getMessage());
     }
@@ -249,7 +249,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
                 .thenReturn(expected);
 
-        User actual = userRepository.getUserByEmail(email);
+        User actual = cut.getUserByEmail(email);
         //then
         assertEquals(expected, actual);
     }
@@ -264,7 +264,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
                 .thenThrow(EmptyResultDataAccessException.class);
 
-        ApiException actual = assertThrows(ApiException.class, () -> userRepository.getUserByEmail(email));
+        ApiException actual = assertThrows(ApiException.class, () -> cut.getUserByEmail(email));
         //then
         assertEquals("There is no such an user at database exists", actual.getMessage());
     }
@@ -279,7 +279,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
                 .thenThrow(NullPointerException.class);
 
-        ApiException actual = assertThrows(ApiException.class, () -> userRepository.getUserByEmail(email));
+        ApiException actual = assertThrows(ApiException.class, () -> cut.getUserByEmail(email));
         //then
         assertEquals("An error occured", actual.getMessage());
     }
@@ -288,6 +288,8 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
     @Test
     void it_should_create_user() {
         //given
+        MockHttpServletRequest request = getMockHttpServletRequest();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
         User expected = firstUser();
         when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class)))
                 .thenReturn(0);
@@ -302,7 +304,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         doNothing().when(roleRepository).addRoleToUser(anyLong(), anyString());
 
         //when
-        User actual = userRepository.create(expected);
+        User actual = cut.create(expected);
         //then
         verify(jdbc, times(1)).update(anyString(), any(SqlParameterSource.class), any(KeyHolder.class), any(String[].class));
         verify(roleRepository, times(1)).addRoleToUser(eq(actual.getId()), eq("ROLE_USER"));
@@ -317,9 +319,34 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
                 .thenReturn(1);
 
         //when
-        ApiException actual = assertThrows(ApiException.class, () -> userRepository.create(user));
+        ApiException actual = assertThrows(ApiException.class, () -> cut.create(user));
         //then
         assertEquals("There is already taken that email", actual.getMessage());
+    }
+
+    @Test
+    void it_should_verify_account_with_success() {
+        //given
+        MockHttpServletRequest request = getMockHttpServletRequest();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+        User expected = thirdUser();
+        String expectedUrl = "http://example.com/users/verify/type/key";
+        //when
+        when(jdbc.queryForObject(any(String.class), any(Map.class), any(RowMapper.class))).thenReturn(expected);
+
+        User actual = cut.verifyAccountKey("key");
+        //then
+        assertEquals(expected.isEnabled(), actual.isEnabled());
+        verify(jdbc).update(eq(UDPATE_USER_ENABLED_QUERY), eq(of("enabled", true, "id", 3L)));
+    }
+
+    private static MockHttpServletRequest getMockHttpServletRequest() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setScheme("http");
+        request.setServerName("localhost");
+        request.setServerPort(-1);
+        request.setRequestURI("/example.com");
+        return request;
     }
 
 

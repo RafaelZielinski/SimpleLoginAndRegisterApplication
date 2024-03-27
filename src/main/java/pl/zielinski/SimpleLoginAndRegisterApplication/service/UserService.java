@@ -17,4 +17,5 @@ public interface UserService {
     UserDTO updateUserData(User user);
     Collection<UserDTO> getUsers();
     UserDTO getUser(Long id);
+    UserDTO verifyAccountKey(String key);
 }

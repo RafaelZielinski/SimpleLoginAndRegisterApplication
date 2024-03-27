@@ -15,7 +15,7 @@ public interface UserRepository<T extends User> {
     Collection<T> list();
     T get(Long id);
     T update(T data);
-
+    T verifyAccountKey(String key);
     User getUserByEmail(String email);
 
 }

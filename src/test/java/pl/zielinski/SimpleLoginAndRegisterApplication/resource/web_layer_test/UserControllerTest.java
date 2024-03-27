@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -275,5 +276,52 @@ class UserControllerTest implements UserControllerProvider {
                 .andExpect(jsonPath("$.data.refresh_token").doesNotExist())
                 .andExpect(jsonPath("$.statusCode").value(400));
         //then
+    }
+
+    @DisplayName("Testing method verifyAccount(@PathVariable String key")
+    @Test
+    void it_should_return_verified_account_with_success() throws Exception {
+        //given
+        UserDTO expected = thirdUserDTO();
+        //when
+        when(userService.verifyAccountKey(Mockito.anyString())).thenReturn(expected);
+        //then
+        mockMvc.perform(get("/users/verify/account/broadKey")
+                        .contentType(APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Account verified"));
+    }
+
+    @DisplayName("Testing method verifyAccount(@PathVariable String key")
+    @Test
+    void it_should_return_message_account_was_already_verified() throws Exception {
+        //given
+        UserDTO expected = firstUserDTO();
+        //when
+        when(userService.verifyAccountKey(Mockito.anyString())).thenReturn(expected);
+        //then
+        mockMvc.perform(get("/users/verify/account/broadKey")
+                        .contentType(APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Account already verified"));
+    }
+
+    //throw new ApiException("This link is not valid.");
+
+    @DisplayName("Testing method verifyAccount(@PathVariable String key")
+    @Test
+    void it_should_throw_exception_this_link_is_nov_valid() throws Exception {
+        //given
+        UserDTO expected = firstUserDTO();
+        //when
+        when(userService.verifyAccountKey(Mockito.anyString())).thenThrow(new ApiException("This link is not valid."));
+        //then
+        mockMvc.perform(get("/users/verify/account/broadKey")
+                        .contentType(APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason").value("This link is not valid."));
     }
 }

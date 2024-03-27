@@ -6,8 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import pl.zielinski.SimpleLoginAndRegisterApplication.configuration.PasswordConfig;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
@@ -68,6 +71,15 @@ class UserRepositoryImplTest implements RoleProvider {
             statement.execute(deleteDataUser());
             statement.execute(fillFourUsers());
         }
+    }
+
+    void insertThreeAccountVerification() throws SQLException {
+        try(Connection connection = dataSource.getConnection();
+        Statement statement = connection.createStatement()) {
+            statement.execute(deleteDataAccountVerification());
+            statement.execute(fillDataAccountVerifications());
+        }
+
     }
 
     @DisplayName("Testing method getUserByEmail(String email)")
@@ -187,6 +199,8 @@ class UserRepositoryImplTest implements RoleProvider {
     @Test
     void it_should_create_one_user_from_database() throws SQLException {
         //given
+        MockHttpServletRequest request = getMockHttpServletRequest();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
         insertFourDataRoles();
         deleteUsers();
         User user = beforeUpdating();
@@ -196,7 +210,7 @@ class UserRepositoryImplTest implements RoleProvider {
         assertEquals("Rafał", actual.getFirstName());
         assertEquals("Zieliński", actual.getLastName());
         assertEquals(27L, actual.getAge());
-        assertTrue(actual.isEnabled());
+        assertFalse(actual.isEnabled());
         assertTrue(actual.isNotLocked());
         assertFalse(actual.isUsingMfa());
     }
@@ -214,7 +228,43 @@ class UserRepositoryImplTest implements RoleProvider {
         assertEquals("There is already taken that email", actual.getMessage() );
     }
 
+    @DisplayName("Testing method verifyAccountKey(String key)")
+    @Test
+    void it_should_verify_account_with_success() throws SQLException {
+        //given
+        MockHttpServletRequest request = getMockHttpServletRequest();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+        insertFourUsers();
+        insertFourDataRoles();
+        insertThreeAccountVerification();
+        //when
+        User actual = cut.verifyAccountKey("key1");
+        //then
+        assertEquals(actual.getId(), 3L);
+    }
 
+    @DisplayName("Testing method verifyAccountKey(String key)")
+    @Test
+    void it_should_verify_account_with_fail_and_throw_this_link_is_not_valid() throws SQLException {
+        //given
+        MockHttpServletRequest request = getMockHttpServletRequest();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+        insertFourUsers();
+        insertFourDataRoles();
+        insertThreeAccountVerification();
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.verifyAccountKey("key3"));
+        //then
+        assertEquals("This link is not valid.", actual.getMessage());
+    }
 
+    private static MockHttpServletRequest getMockHttpServletRequest() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setScheme("http");
+        request.setServerName("localhost");
+        request.setServerPort(-1);
+        request.setRequestURI("/example.com");
+        return request;
+    }
 
 }

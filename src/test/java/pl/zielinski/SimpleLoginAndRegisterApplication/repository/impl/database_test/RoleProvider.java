@@ -10,6 +10,25 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
  */
 public interface RoleProvider {
 
+    default String chooseUserByUserIdFromAccountVerifications() {
+        return """
+                SELECT * FROM Users u JOIN AccountVerifications av ON u.id = av.user_id WHERE u.id = ?;
+                """;
+    }
+
+    default String deleteDataAccountVerification() {
+        return """
+                DELETE FROM AccountVerifications
+                """;
+    }
+
+    default String fillDataAccountVerifications() {
+        return """
+                INSERT INTO AccountVerifications(id, user_id, url) VALUES(1, 3, 'http://localhost/users/verify/account/key1');
+                INSERT INTO AccountVerifications(id, user_id, url) VALUES(2, 2, 'http://localhost/users/verify/account/key2');
+                INSERT INTO AccountVerifications(id, user_id, url) VALUES(3, 1, 'key3');
+                """;
+    }
     default String deleteDataRoles() {
         return """
                 DELETE FROM Roles;
