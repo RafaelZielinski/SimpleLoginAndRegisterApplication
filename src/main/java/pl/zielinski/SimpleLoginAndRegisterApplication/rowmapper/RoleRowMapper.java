@@ -13,7 +13,6 @@ import java.sql.SQLException;
  * @since 25/12/2023
  */
 public class RoleRowMapper implements RowMapper<Role> {
-
     @Override
     public Role mapRow(ResultSet rs, int rowNum) throws SQLException {
         return Role.builder()
