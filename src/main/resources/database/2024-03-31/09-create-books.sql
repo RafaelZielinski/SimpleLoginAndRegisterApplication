@@ -10,6 +10,6 @@ CREATE TABLE Books
   author VARCHAR(50) NOT NULL,
   genre VARCHAR(50) NOT NULL,
   publisher VARCHAR(50) NOT NULL,
-  pages INTEGER (CHECK pages > 0),
+  pages INTEGER CHECK (pages > 0),
   CONSTRAINT UQ_Books_title UNIQUE (title)
 );
