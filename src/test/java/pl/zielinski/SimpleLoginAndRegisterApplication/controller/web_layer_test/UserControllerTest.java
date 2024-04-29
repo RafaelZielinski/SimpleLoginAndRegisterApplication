@@ -1,4 +1,4 @@
-package pl.zielinski.SimpleLoginAndRegisterApplication.resource.web_layer_test;
+package pl.zielinski.SimpleLoginAndRegisterApplication.controller.web_layer_test;
 
 import com.google.gson.JsonObject;
 import org.junit.jupiter.api.DisplayName;
@@ -21,8 +21,8 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.domain.UserPrincipal;
 import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.provider.TokenProvider;
-import pl.zielinski.SimpleLoginAndRegisterApplication.resource.UserController;
-import pl.zielinski.SimpleLoginAndRegisterApplication.resource.web_layer_test.provider.UserControllerProvider;
+import pl.zielinski.SimpleLoginAndRegisterApplication.controller.UserController;
+import pl.zielinski.SimpleLoginAndRegisterApplication.controller.web_layer_test.provider.UserControllerProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.RoleService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
 

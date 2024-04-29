@@ -1,4 +1,4 @@
-package pl.zielinski.SimpleLoginAndRegisterApplication.resource.web_layer_test.provider;
+package pl.zielinski.SimpleLoginAndRegisterApplication.controller.web_layer_test.provider;
 
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
