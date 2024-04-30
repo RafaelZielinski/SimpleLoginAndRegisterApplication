@@ -1,4 +1,4 @@
-package pl.zielinski.SimpleLoginAndRegisterApplication.resource;
+package pl.zielinski.SimpleLoginAndRegisterApplication.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
