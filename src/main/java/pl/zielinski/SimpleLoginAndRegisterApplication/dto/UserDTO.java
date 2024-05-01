@@ -23,10 +23,11 @@ public class UserDTO{
         private String lastName;
         private String email;
         private String age;
-        private Boolean enabled;
-        private Boolean isNotLocked;
-        private Boolean isUsingMfa;
+        private boolean enabled;
+        private boolean isNotLocked;
+        private boolean isUsingMfa;
         private LocalDateTime createdAt;
+        private String phone;
         private String roleName;
         private String permissions;
-        }
+}

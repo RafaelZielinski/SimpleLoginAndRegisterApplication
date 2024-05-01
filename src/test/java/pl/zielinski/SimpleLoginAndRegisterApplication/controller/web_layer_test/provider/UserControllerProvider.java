@@ -69,7 +69,7 @@ public interface UserControllerProvider {
     }
 
     default User firstUser() {
-        return new User(1L, "Rafał", "Zieliński", "rafekzielinski@wp.pl", 15L, "password", true, true, false, now());
+        return new User(1L, "Rafał", "Zieliński", "rafekzielinski@wp.pl", 15L, "password", true, true, false, now(), null);
     }
 
     default Role firstRole() {
