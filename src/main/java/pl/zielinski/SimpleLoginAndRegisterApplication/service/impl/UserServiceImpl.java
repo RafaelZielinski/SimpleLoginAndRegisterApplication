@@ -54,4 +54,9 @@ public class UserServiceImpl implements UserService {
     public UserDTO verifyAccountKey(String key) {
         return UserDTOMapper.fromUser(userRepository.verifyAccountKey(key));
     }
+
+    @Override
+    public void sendVerificationCode(UserDTO user) {
+        userRepository.sendVerificationCode(user);
+    }
 }

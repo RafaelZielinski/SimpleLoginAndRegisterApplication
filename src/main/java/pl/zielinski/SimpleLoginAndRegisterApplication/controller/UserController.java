@@ -20,6 +20,8 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static java.time.LocalDateTime.now;
+import static java.util.Map.of;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.security.authentication.UsernamePasswordAuthenticationToken.unauthenticated;
@@ -41,6 +43,10 @@ public class UserController {
     ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm) {
         Authentication authentication = authenticationManager.authenticate(unauthenticated(loginForm.getEmail(), loginForm.getPassword()));
         UserDTO loggedInUser = ((UserPrincipal) authentication.getPrincipal()).getUserDTO();
+        return loggedInUser.isUsingMfa() ? sendVerificationCode(loggedInUser) : sendResponse(loggedInUser);
+    }
+
+    private ResponseEntity<HttpResponse> sendResponse(UserDTO loggedInUser) {
         return new ResponseEntity<>(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
@@ -49,6 +55,18 @@ public class UserController {
                         .message("Login Success")
                         .data(Map.of("user", loggedInUser, "access_token", tokenProvider.createAccessToken(getUserPrincipal(loggedInUser)), "refresh_token", tokenProvider.createRefreshToken(getUserPrincipal(loggedInUser))))
                         .build(), HttpStatus.OK);
+    }
+
+    private ResponseEntity<HttpResponse> sendVerificationCode(UserDTO user) {
+        userService.sendVerificationCode(user);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .data(of("user", user))
+                        .message("Verification Code Sent")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .build());
     }
 
     private UserPrincipal getUserPrincipal(UserDTO user) {
@@ -94,12 +112,13 @@ public class UserController {
                         .build());
     }
 
+    //verify your account, set true to enable without authorization only url, probably send to email
     @GetMapping("/verify/account/{key}")
     public ResponseEntity<HttpResponse> verifyAccount(@PathVariable String key) {
         return ResponseEntity.ok(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
-                        .message(userService.verifyAccountKey(key).getEnabled() ? "Account already verified" : "Account verified")
+                        .message(userService.verifyAccountKey(key).isEnabled() ? "Account already verified" : "Account verified")
                         .status(HttpStatus.OK)
                         .statusCode(OK.value())
                         .build());
