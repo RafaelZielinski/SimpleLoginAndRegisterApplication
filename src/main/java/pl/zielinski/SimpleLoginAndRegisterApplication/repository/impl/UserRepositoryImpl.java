@@ -2,7 +2,6 @@ package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.FastDateFormat;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -34,13 +33,14 @@ import java.util.UUID;
 import static java.util.Map.of;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.apache.commons.lang3.time.DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT;
+import static org.apache.commons.lang3.time.DateFormatUtils.*;
 import static org.apache.commons.lang3.time.DateFormatUtils.format;
 import static org.apache.commons.lang3.time.DateUtils.addDays;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleType.ROLE_USER;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.VerificationType.ACCOUNT;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.UDPATE_USER_ENABLED_QUERY;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.query.UserQuery.*;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.utils.SmsUtils.sendSMS;
 
 /**
  * @author rafek
@@ -89,7 +89,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             throw new UsernameNotFoundException("User not found exception");
         } else {
             log.info("User found in database : {} ", email);
-            return new UserPrincipal(user, roleRepository.get(user.getId()));
+            return new UserPrincipal(user, roleRepository.getRoleByUserId(user.getId()));
         }
     }
 
@@ -184,5 +184,33 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             log.error(exception.getMessage());
             throw new ApiException("An error occurred. Please try again.");
         }
+    }
+
+    //MFA via login
+    @Override
+    public void sendVerificationCode(UserDTO user) {
+        String expirationDate = format(addDays(new Date(), 1), "yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime localDateTime = LocalDateTime.parse(expirationDate, formatter);
+
+        String verificationCode = randomAlphabetic(7).toUpperCase();
+        log.info("\n expiration Date {} \n verification Code {} \n id {}", localDateTime, verificationCode, user.getId());
+
+        try {
+            jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, of("id", user.getId()));
+            jdbc.update(INSERT_VERIFICATION_CODE_QUERY, getSqlParameterSourceForCreatingVerifyMFA(user.getId(), verificationCode, localDateTime));
+            sendSMS(user.getPhone(), "From Rafael Zet \n Verification Code \n" + verificationCode);
+
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("An error occurred. Please try again.");
+        }
+    }
+
+    private SqlParameterSource getSqlParameterSourceForCreatingVerifyMFA(Long id, String code, LocalDateTime dateTime) {
+        return new MapSqlParameterSource()
+                .addValue("id", id)
+                .addValue("url", code)
+                .addValue("expiration", dateTime);
     }
 }

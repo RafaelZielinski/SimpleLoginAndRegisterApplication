@@ -1,5 +1,6 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.controller.web_layer_test.provider;
 
+import org.springframework.security.core.parameters.P;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
 import pl.zielinski.SimpleLoginAndRegisterApplication.dto.RoleDTO;
@@ -22,7 +23,7 @@ public interface UserControllerProvider {
                 .firstName("Rafał")
                 .lastName("Zieliński")
                 .email("rafekzielinski@wp.pl")
-                .age("15")
+                .age(15L)
                 .enabled(true)
                 .isNotLocked(true)
                 .isUsingMfa(false)
@@ -38,7 +39,7 @@ public interface UserControllerProvider {
                 .firstName("Marek")
                 .lastName("Zieliński")
                 .email("marekzielinski@wp.pl")
-                .age("25")
+                .age(25L)
                 .enabled(true)
                 .isNotLocked(true)
                 .isUsingMfa(true)
@@ -54,7 +55,7 @@ public interface UserControllerProvider {
                 .firstName("Edward")
                 .lastName("Klepko")
                 .email("edwardklepko69@wp.pl")
-                .age("44")
+                .age(44L)
                 .enabled(false)
                 .isNotLocked(false)
                 .isUsingMfa(false)
@@ -63,6 +64,7 @@ public interface UserControllerProvider {
                 .permissions("READ:USER:READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER,DELETE:USER,DELETE:CUSTOMER")
                 .build();
     }
+
 
     default RoleDTO firstRoleDTO() {
         return new RoleDTO(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
@@ -74,5 +76,9 @@ public interface UserControllerProvider {
 
     default Role firstRole() {
         return new Role(1L, "ROLE_USER", "READ:USER,READ:CUSTOMER");
+    }
+
+    default User secondUser() {
+        return new User(2L, "Marek", "Zieliński", "marekzielinski@wp.pl", 15L, "password", true, true, true, now(), null);
     }
 }

@@ -22,7 +22,7 @@ public class UserDTO{
         private String firstName;
         private String lastName;
         private String email;
-        private String age;
+        private Long age;
         private boolean enabled;
         private boolean isNotLocked;
         private boolean isUsingMfa;
