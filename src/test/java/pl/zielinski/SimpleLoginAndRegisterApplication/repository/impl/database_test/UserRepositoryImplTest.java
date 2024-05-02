@@ -17,6 +17,7 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.RoleRepositoryImpl;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.UserRepositoryImpl;
+import pl.zielinski.SimpleLoginAndRegisterApplication.service.impl.SmsServiceImpl;
 
 import javax.sql.DataSource;
 
@@ -38,7 +39,7 @@ import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTest
 @ActiveProfiles("test")
 @JdbcTest()
 @AutoConfigureTestDatabase(replace = NONE)
-@Import({UserRepositoryImpl.class, PasswordConfig.class, RoleRepositoryImpl.class})
+@Import({UserRepositoryImpl.class, PasswordConfig.class, RoleRepositoryImpl.class, SmsServiceImpl.class})
 class UserRepositoryImplTest implements RoleProvider {
 
     @Autowired
