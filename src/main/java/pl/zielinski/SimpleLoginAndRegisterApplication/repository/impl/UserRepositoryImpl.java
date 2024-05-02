@@ -22,6 +22,8 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
+import pl.zielinski.SimpleLoginAndRegisterApplication.service.SmsService;
+import pl.zielinski.SimpleLoginAndRegisterApplication.service.impl.SmsServiceImpl;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,14 +35,13 @@ import java.util.UUID;
 import static java.util.Map.of;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.apache.commons.lang3.time.DateFormatUtils.*;
 import static org.apache.commons.lang3.time.DateFormatUtils.format;
 import static org.apache.commons.lang3.time.DateUtils.addDays;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleType.ROLE_USER;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.VerificationType.ACCOUNT;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.UDPATE_USER_ENABLED_QUERY;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.query.UserQuery.*;
-import static pl.zielinski.SimpleLoginAndRegisterApplication.utils.SmsUtils.sendSMS;
+
 
 /**
  * @author rafek
@@ -56,6 +57,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     private final NamedParameterJdbcTemplate jdbc;
     private final BCryptPasswordEncoder encoder;
     private final RoleRepository<Role> roleRepository;
+    private final SmsService smsService;
 
     @Override
     public User create(User user) {
@@ -199,7 +201,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         try {
             jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, of("id", user.getId()));
             jdbc.update(INSERT_VERIFICATION_CODE_QUERY, getSqlParameterSourceForCreatingVerifyMFA(user.getId(), verificationCode, localDateTime));
-            sendSMS(user.getPhone(), "From Rafael Zet \n Verification Code \n" + verificationCode);
+            smsService.sendSms(user.getPhone(), "From Rafael Zet \nVerification Code \n" + verificationCode);
 
         } catch (Exception exception) {
             log.error(exception.getMessage());
