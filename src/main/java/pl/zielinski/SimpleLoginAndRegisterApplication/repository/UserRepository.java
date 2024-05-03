@@ -1,6 +1,7 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository;
 
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 
 import java.util.Collection;
 
@@ -17,5 +18,5 @@ public interface UserRepository<T extends User> {
     T update(T data);
     T verifyAccountKey(String key);
     User getUserByEmail(String email);
-
+    void sendVerificationCode(UserDTO user, String verificationCode);
 }

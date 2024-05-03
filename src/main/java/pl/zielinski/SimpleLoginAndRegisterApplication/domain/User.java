@@ -35,4 +35,5 @@ public class User {
     private boolean isNotLocked;
     private boolean isUsingMfa;
     private LocalDateTime createdAt;
+    private String phone;
 }

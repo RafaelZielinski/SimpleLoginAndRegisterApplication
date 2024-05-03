@@ -16,5 +16,7 @@ public class UserQuery {
     public static final String INSERT_ACCOUNT_VERIFICATION_URL_QUERY = "INSERT INTO AccountVerifications (user_id, url) VALUES (:userId, :url)";
     public static final String SELECT_USER_BY_ACCOUNT_URL_QUERY = "SELECT * FROM Users WHERE id = (SELECT user_id FROM AccountVerifications WHERE url = :url)";
     public static final String DELETE_USER_IN_ACCOUNT_VERIFICATIONS_BY_KEY_QUERY = "DELETE FROM AccountVerifications WHERE url = :key";
+    public static final String DELETE_VERIFICATION_CODE_BY_USER_ID = "DELETE FROM TwoFactorVerifications WHERE user_id = :id";
+    public static final String INSERT_TWOFACTORVERIFICATIONS_CODE_QUERY = "INSERT INTO TwoFactorVerifications(user_id, code, expire_date) VALUES(:id, :url, :expiration)";
 
 }

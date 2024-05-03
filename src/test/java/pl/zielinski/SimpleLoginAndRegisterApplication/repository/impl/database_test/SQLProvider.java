@@ -1,6 +1,7 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_test;
 
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 
 /**
  * @author rafek
@@ -8,7 +9,7 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
  * @licence ask rafekzielinski@wp.pl
  * @since 06/03/2024
  */
-public interface RoleProvider {
+public interface SQLProvider {
 
     default String chooseUserByUserIdFromAccountVerifications() {
         return """
@@ -22,6 +23,12 @@ public interface RoleProvider {
                 """;
     }
 
+    default String deleteDataTwoFactorVerifications() {
+        return """
+                DELETE FROM TwoFactorVerifications;
+                """;
+    }
+
     default String fillDataAccountVerifications() {
         return """
                 INSERT INTO AccountVerifications(id, user_id, url) VALUES(1, 3, 'http://localhost/users/verify/account/key1');
@@ -29,12 +36,12 @@ public interface RoleProvider {
                 INSERT INTO AccountVerifications(id, user_id, url) VALUES(3, 1, 'key3');
                 """;
     }
+
     default String deleteDataRoles() {
         return """
                 DELETE FROM Roles;
                 """;
     }
-
     default String deleteDataUser() {
         return """
                 DELETE FROM Users;
@@ -69,6 +76,16 @@ public interface RoleProvider {
         return """
                 INSERT INTO UserRoles(id, user_id, role_id)
                 VALUES(1, 1, 1);
+                """;
+    }
+
+    default String fillDataTwoFactorVerifications() {
+        return """
+                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(1, 2, 'code1', '2024-05-03T18:12:52');
+                 
+                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(2, 1, 'code2', '2024-05-03T18:17:32');
+                 
+                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(3, 3, 'code3', '2024-05-03T18:12:45');
                 """;
     }
 
@@ -114,6 +131,21 @@ public interface RoleProvider {
                 .isNotLocked(true)
                 .isUsingMfa(false)
                 .build();
+    }
+
+    default UserDTO firstUserDTO() {
+        return UserDTO.builder()
+                .id(1L)
+                .firstName("Rafał")
+                .lastName("Zieliński")
+                .email("rafekzielinski@wp.pl")
+                .age(26L)
+                .enabled(true)
+                .isNotLocked(true)
+                .isUsingMfa(false)
+                .phone("+48722145931")
+                .build();
+
     }
 
 }

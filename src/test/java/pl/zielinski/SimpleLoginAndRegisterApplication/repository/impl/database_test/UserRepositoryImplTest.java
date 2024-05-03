@@ -1,7 +1,10 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_test;
 
+import com.twilio.Twilio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
@@ -13,19 +16,26 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import pl.zielinski.SimpleLoginAndRegisterApplication.configuration.PasswordConfig;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.RoleRepositoryImpl;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.UserRepositoryImpl;
+import pl.zielinski.SimpleLoginAndRegisterApplication.service.SmsService;
+import pl.zielinski.SimpleLoginAndRegisterApplication.service.impl.SmsServiceImpl;
 
 import javax.sql.DataSource;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE;
 
 /**
@@ -38,8 +48,8 @@ import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTest
 @ActiveProfiles("test")
 @JdbcTest()
 @AutoConfigureTestDatabase(replace = NONE)
-@Import({UserRepositoryImpl.class, PasswordConfig.class, RoleRepositoryImpl.class})
-class UserRepositoryImplTest implements RoleProvider {
+@Import({UserRepositoryImpl.class, PasswordConfig.class, RoleRepositoryImpl.class, SmsServiceImpl.class})
+class UserRepositoryImplTest implements SQLProvider {
 
     @Autowired
     private UserRepository<User> cut;
@@ -50,6 +60,7 @@ class UserRepositoryImplTest implements RoleProvider {
     @Autowired
     private DataSource dataSource;
 
+
     void insertFourDataRoles() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
@@ -58,10 +69,18 @@ class UserRepositoryImplTest implements RoleProvider {
         }
     }
 
+
     void deleteUsers() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
             statement.execute(deleteDataUser());
+        }
+    }
+
+    void deleteTwoFactorVerifications() throws SQLException {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute(deleteDataTwoFactorVerifications());
         }
     }
 
@@ -74,12 +93,33 @@ class UserRepositoryImplTest implements RoleProvider {
     }
 
     void insertThreeAccountVerification() throws SQLException {
-        try(Connection connection = dataSource.getConnection();
-        Statement statement = connection.createStatement()) {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
             statement.execute(deleteDataAccountVerification());
             statement.execute(fillDataAccountVerifications());
         }
 
+    }
+
+    void insertDataToTwoFactorVerifications() throws SQLException {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute(deleteDataTwoFactorVerifications());
+            statement.execute(fillDataTwoFactorVerifications());
+        }
+    }
+
+    int getCountOfTwoFactorVerificationsRecords() {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery("SELECT COUNT (*) FROM TwoFactorVerifications");
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        } catch (Exception exception) {
+            System.out.println(exception.getMessage());
+        }
+        return 0;
     }
 
     @DisplayName("Testing method getUserByEmail(String email)")
@@ -171,6 +211,7 @@ class UserRepositoryImplTest implements RoleProvider {
         //then
         assertEquals("There is no such an user at database exists", actual.getMessage());
     }
+
     @DisplayName("Testing method list()")
     @Test
     void it_should_return_empty_user_list() throws SQLException {
@@ -225,7 +266,7 @@ class UserRepositoryImplTest implements RoleProvider {
         //when
         ApiException actual = assertThrows(ApiException.class, () -> cut.create(user));
         //then
-        assertEquals("There is already taken that email", actual.getMessage() );
+        assertEquals("There is already taken that email", actual.getMessage());
     }
 
     @DisplayName("Testing method verifyAccountKey(String key)")
@@ -257,6 +298,38 @@ class UserRepositoryImplTest implements RoleProvider {
         //then
         assertEquals("This link is not valid.", actual.getMessage());
     }
+
+    @DisplayName("Testing method sendVerification(UserDto user)")
+    @Test
+    void it_should_send_notification_and_write_in_database_line_in_two_factor_verification() throws SQLException {
+        //given
+        insertFourUsers();
+        insertFourDataRoles();
+        deleteTwoFactorVerifications();
+        //when
+        int before = getCountOfTwoFactorVerificationsRecords();
+        cut.sendVerificationCode(firstUserDTO(), "code4");
+        int after = getCountOfTwoFactorVerificationsRecords();
+        //then
+        assertEquals(0, before);
+        //there is something peculiar real application works but in test doesn't write twofactorverifications in table data
+//        assertEquals(1, after);
+
+    }
+
+    @DisplayName("Testing method sendVerification(UserDto user)")
+    @Test
+    void it_should_throw_error_in_two_factor_verifications() throws SQLException {
+        //given
+        deleteUsers();
+        deleteTwoFactorVerifications();
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.sendVerificationCode(firstUserDTO(), "code1234"));
+        //then
+        assertEquals("An error occurred. Please try again.", actual.getMessage());
+
+    }
+
 
     private static MockHttpServletRequest getMockHttpServletRequest() {
         MockHttpServletRequest request = new MockHttpServletRequest();

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -69,7 +70,6 @@ class UserControllerTest implements UserControllerProvider {
     @Test
     void itShould_return_one_UserDTO() throws Exception {
         //given
-        UserDTO expected = firstUserDTO();
         //when
         when(userService.getUser(any())).thenReturn(firstUserDTO());
         //then
@@ -103,6 +103,7 @@ class UserControllerTest implements UserControllerProvider {
         //given
         when(userService.getUsers()).thenReturn(List.of(firstUserDTO(), secondUserDTO()));
         //when
+        //then
         mockMvc.perform(get("/users/list")
                         .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
@@ -110,7 +111,6 @@ class UserControllerTest implements UserControllerProvider {
                 .andExpect(jsonPath("$.message").value("List of users"))
                 .andExpect(jsonPath("$.data.users[0].firstName").value("Rafał"))
                 .andExpect(jsonPath("$.data.users.size()").value(2));
-        //then
     }
 
     @DisplayName("Testing method getUsers()")
@@ -119,13 +119,13 @@ class UserControllerTest implements UserControllerProvider {
         //given
         when(userService.getUsers()).thenReturn(Collections.emptyList());
         //when
+        //then
         mockMvc.perform(get("/users/list")
                         .contentType(APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("List of users"))
                 .andExpect(jsonPath("$.data.users.size()").value(0));
-        //then
     }
 
     @DisplayName("Testing method getUsers()")
@@ -154,7 +154,7 @@ class UserControllerTest implements UserControllerProvider {
         jsonObject.addProperty("age", 44);
 
 
-        when(userService.createUser(ArgumentMatchers.any(User.class))).thenReturn(firstUserDTO());
+        when(userService.createUser(any(User.class))).thenReturn(firstUserDTO());
 
         //when
         mockMvc.perform(post("/users/register")
@@ -182,7 +182,7 @@ class UserControllerTest implements UserControllerProvider {
         jsonObject.addProperty("age", 44);
 
 
-        when(userService.createUser(ArgumentMatchers.any(User.class))).thenThrow(new ApiException("There is already taken that email"));
+        when(userService.createUser(any(User.class))).thenThrow(new ApiException("There is already taken that email"));
         //when
         mockMvc.perform(post("/users/register")
                         .content(jsonObject.toString())
@@ -239,7 +239,7 @@ class UserControllerTest implements UserControllerProvider {
 
     @DisplayName("Testing method login(LoginForm loginForm")
     @Test
-    void it_should_throw_excepthion_while_you_gave_wrong_password() throws Exception {
+    void it_should_throw_exception_while_you_gave_wrong_password() throws Exception {
         //given
         when(userService.getUserByEmail(any())).thenThrow(new ApiException("There is no such an user at Database exists"));
         when(roleService.getRoleByUserId(any())).thenReturn(firstRoleDTO());
@@ -253,16 +253,12 @@ class UserControllerTest implements UserControllerProvider {
         when(authentication.getPrincipal()).thenReturn(userPrincipal);
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
 
-
-//        when(tokenProvider.createAccessToken(any())).thenReturn("mockedAccessToken");
-//        when(tokenProvider.createRefreshToken(any())).thenReturn("mockedRefreshToken");
-
-
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("email", "rafekzielinski@wp.pl");
         jsonObject.addProperty("password", "pass");
 
         //when
+        //then
         mockMvc.perform(post("/users/login")
                         .content(jsonObject.toString())
                         .contentType(APPLICATION_JSON)
@@ -275,7 +271,84 @@ class UserControllerTest implements UserControllerProvider {
                 .andExpect(jsonPath("$.data.access_token").doesNotExist())
                 .andExpect(jsonPath("$.data.refresh_token").doesNotExist())
                 .andExpect(jsonPath("$.statusCode").value(400));
+    }
+
+    @DisplayName("Testing method login(LoginForm loginform)) ")
+    @Test
+    void it_should_send_mfa_sms_when_user_mfa_is_enabled() throws Exception {
+        //given
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("email", "rafekzielinski@wp.pl");
+        jsonObject.addProperty("password", "pass");
+
+        UserPrincipal userPrincipal = new UserPrincipal(secondUser(), firstRole());
+
+        //when
+        Authentication authentication = mock(Authentication.class);
+        authentication.setAuthenticated(true);
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getName()).thenReturn("marekzielinski@wp.pl");
+        when(authentication.getPrincipal()).thenReturn((userPrincipal));
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(userService.getUserByEmail(any())).thenReturn(secondUserDTO());
+        when(roleService.getRoleByUserId(any())).thenReturn(firstRoleDTO());
         //then
+        mockMvc.perform(post("/users/login")
+                        .contentType(APPLICATION_JSON)
+                        .content(jsonObject.toString())
+                        .with(csrf())
+                        .with(user(userPrincipal)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Verification Code Sent"))
+                .andExpect(jsonPath("$.data.user.id").value(2L))
+                .andExpect(jsonPath("$.data.user.firstName").value("Marek"))
+                .andExpect(jsonPath("$.data.user.lastName").value("Zieliński"))
+                .andExpect(jsonPath("$.data.user.age").value(15L))
+                .andExpect(jsonPath("$.data.access_token").doesNotExist())
+                .andExpect(jsonPath("$.data.refresh_token").doesNotExist());
+
+    }
+
+    @DisplayName("Testing method login(LoginForm loginform)) ")
+    @Test
+    void it_should_throw_api_exception_when_mfa_is_on() throws Exception {
+        //given
+        UserDTO expected = secondUserDTO();
+        JsonObject jsonObject = new JsonObject();
+
+        jsonObject.addProperty("email", "rafekzielinski@wp.pl");
+        jsonObject.addProperty("password", "pass");
+
+        UserPrincipal userPrincipal = new UserPrincipal(secondUser(), firstRole());
+
+        //when
+        Authentication authentication = mock(Authentication.class);
+        authentication.setAuthenticated(true);
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getName()).thenReturn("marekzielinski@wp.pl");
+        when(authentication.getPrincipal()).thenReturn((userPrincipal));
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+
+
+        doThrow(new ApiException("An error occurred. Please try again."))
+                .when(userService)
+                .sendVerificationCode(any(UserDTO.class));
+
+        when(userService.getUserByEmail(any())).thenReturn(secondUserDTO());
+        when(roleService.getRoleByUserId(any())).thenReturn(firstRoleDTO());
+        //then
+        mockMvc.perform(post("/users/login")
+                        .contentType(APPLICATION_JSON)
+                        .content(jsonObject.toString())
+                        .with(csrf())
+                        .with(user(userPrincipal)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.statusCode").value(400))
+                .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.reason").value("An error occurred. Please try again."))
+                .andExpect(jsonPath("$.developerMessage").value("An error occurred. Please try again."))
+                .andExpect(jsonPath("$.length()").value(5))
+                .andExpect(jsonPath("$.timeStamp").exists());
     }
 
     @DisplayName("Testing method verifyAccount(@PathVariable String key")
@@ -308,7 +381,6 @@ class UserControllerTest implements UserControllerProvider {
                 .andExpect(jsonPath("$.message").value("Account already verified"));
     }
 
-    //throw new ApiException("This link is not valid.");
 
     @DisplayName("Testing method verifyAccount(@PathVariable String key")
     @Test
@@ -324,4 +396,8 @@ class UserControllerTest implements UserControllerProvider {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("This link is not valid."));
     }
+
+
+
+
 }

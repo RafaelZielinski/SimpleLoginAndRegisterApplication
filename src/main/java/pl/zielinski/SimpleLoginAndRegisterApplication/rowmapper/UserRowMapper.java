@@ -26,6 +26,7 @@ public class UserRowMapper implements RowMapper<User> {
                 .enabled(resultSet.getBoolean("enabled"))
                 .isNotLocked(resultSet.getBoolean("non_locked"))
                 .isUsingMfa(resultSet.getBoolean("using_mfa"))
+                .phone(resultSet.getString("phone"))
                 .createdAt(resultSet.getTimestamp("created_date").toLocalDateTime())
                 .build();    }
 }
