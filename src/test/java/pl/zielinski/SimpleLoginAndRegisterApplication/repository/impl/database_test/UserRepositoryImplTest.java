@@ -1,7 +1,10 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_test;
 
+import com.twilio.Twilio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
@@ -13,10 +16,12 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import pl.zielinski.SimpleLoginAndRegisterApplication.configuration.PasswordConfig;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.RoleRepositoryImpl;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.UserRepositoryImpl;
+import pl.zielinski.SimpleLoginAndRegisterApplication.service.SmsService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.impl.SmsServiceImpl;
 
 import javax.sql.DataSource;
@@ -27,6 +32,9 @@ import java.sql.Statement;
 import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE;
 
 /**
@@ -40,7 +48,7 @@ import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTest
 @JdbcTest()
 @AutoConfigureTestDatabase(replace = NONE)
 @Import({UserRepositoryImpl.class, PasswordConfig.class, RoleRepositoryImpl.class, SmsServiceImpl.class})
-class UserRepositoryImplTest implements RoleProvider {
+class UserRepositoryImplTest implements SQLProvider {
 
     @Autowired
     private UserRepository<User> cut;
@@ -51,6 +59,8 @@ class UserRepositoryImplTest implements RoleProvider {
     @Autowired
     private DataSource dataSource;
 
+
+
     void insertFourDataRoles() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
@@ -58,6 +68,7 @@ class UserRepositoryImplTest implements RoleProvider {
             statement.execute(fillDataRoles());
         }
     }
+
 
     void deleteUsers() throws SQLException {
         try (Connection connection = dataSource.getConnection();
@@ -257,6 +268,24 @@ class UserRepositoryImplTest implements RoleProvider {
         ApiException actual = assertThrows(ApiException.class, () -> cut.verifyAccountKey("key3"));
         //then
         assertEquals("This link is not valid.", actual.getMessage());
+    }
+
+    @DisplayName("Testing method sendVerification(UserDto user)")
+    @Test
+    void it_should_send_notification_and_write_in_database_line_in_two_factor_verification() throws SQLException
+    {
+        //given
+        SmsServiceImpl smsService = Mockito.mock(SmsServiceImpl.class);
+        Twilio twilio  = Mockito.mock(Twilio.class);
+
+        insertFourUsers();
+        insertFourDataRoles();
+        //when
+
+        doNothing().when(smsService).sendSms(any(), any());
+        cut.sendVerificationCode(firstUserDTO(), "code1234");
+        //then
+
     }
 
     private static MockHttpServletRequest getMockHttpServletRequest() {
