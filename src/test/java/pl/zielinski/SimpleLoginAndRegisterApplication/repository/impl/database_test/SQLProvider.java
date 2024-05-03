@@ -1,6 +1,7 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_test;
 
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 
 /**
  * @author rafek
@@ -8,7 +9,7 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
  * @licence ask rafekzielinski@wp.pl
  * @since 06/03/2024
  */
-public interface RoleProvider {
+public interface SQLProvider {
 
     default String chooseUserByUserIdFromAccountVerifications() {
         return """
@@ -22,11 +23,25 @@ public interface RoleProvider {
                 """;
     }
 
+    default String deleteDataTwoFactorVerifications() {
+        return """
+                DELETE FROM TwoFactorVerifications;
+                """;
+    }
+
     default String fillDataAccountVerifications() {
         return """
                 INSERT INTO AccountVerifications(id, user_id, url) VALUES(1, 3, 'http://localhost/users/verify/account/key1');
                 INSERT INTO AccountVerifications(id, user_id, url) VALUES(2, 2, 'http://localhost/users/verify/account/key2');
                 INSERT INTO AccountVerifications(id, user_id, url) VALUES(3, 1, 'key3');
+                """;
+    }
+
+    default String fillDataTwoFactorVerifications() {
+        return """
+                INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(1, 2, 'code1', '2024-05-03 18:12:52');
+                INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(2, 1, 'code1', '2024-05-03 18:17:32');
+                INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(3, 3, 'code1', '2024-05-03 18:12:45');
                 """;
     }
     default String deleteDataRoles() {
@@ -114,6 +129,21 @@ public interface RoleProvider {
                 .isNotLocked(true)
                 .isUsingMfa(false)
                 .build();
+    }
+
+    default UserDTO firstUserDTO() {
+        return UserDTO.builder()
+                .id(1L)
+                .firstName("Rafał")
+                .lastName("Zieliński")
+                .email("rafekzielinski@wp.pl")
+                .age(26L)
+                .enabled(true)
+                .isNotLocked(true)
+                .isUsingMfa(false)
+                .phone("+48722145931")
+                .build();
+
     }
 
 }
