@@ -329,15 +329,6 @@ class UserRepositoryImplTest implements SQLProvider {
 
     }
 
-//    @Test
-//    void blabla() throws SQLException {
-//        insertFourUsers();
-//        insertFourDataRoles();
-//        fillDataRoles();
-//        insertDataToTwoFactorVerifications();
-//        int before = getCountOfTwoFactorVerificationsRecords();
-//        System.out.println(before);
-//    }
 
     private static MockHttpServletRequest getMockHttpServletRequest() {
         MockHttpServletRequest request = new MockHttpServletRequest();

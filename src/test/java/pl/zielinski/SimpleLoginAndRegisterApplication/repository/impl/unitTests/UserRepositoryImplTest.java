@@ -1,6 +1,7 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.unitTests;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -20,12 +21,14 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
+import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.RoleRepositoryImpl;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.UserRepositoryImpl;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.RoleProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.UserProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
+import pl.zielinski.SimpleLoginAndRegisterApplication.service.impl.SmsServiceImpl;
 
 import java.util.*;
 
@@ -57,6 +60,8 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
 
     @InjectMocks
     UserRepositoryImpl cut;
+
+
 
     @BeforeEach
     public void setUp() {
@@ -204,7 +209,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         //when
         User actual = cut.update(asArgument);
         //then
-        Mockito.verify(jdbc, times(1)).update(anyString(), any(SqlParameterSource.class));
+        verify(jdbc, times(1)).update(anyString(), any(SqlParameterSource.class));
         assertEquals(expected.toString(), actual.toString());
     }
 
@@ -347,6 +352,41 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         request.setServerPort(-1);
         request.setRequestURI("/example.com");
         return request;
+    }
+
+    @DisplayName("testing method sendingVerification(String code, UserDTO user")
+    @Test
+    void it_should_with_success_save_mfa_code_to_database() {
+        //given
+        UserDTO userDTO = firstUserDTO();
+
+
+       when(jdbc.update(any(String.class), any(Map.class))).thenReturn(1);
+       when(jdbc.update(any(String.class), any(SqlParameterSource.class))).thenReturn(1);
+        //when
+        cut.sendVerificationCode(userDTO, "code1");
+        //then
+
+        verify(jdbc, times(1)).update(anyString(), any(SqlParameterSource.class));
+        verify(jdbc, times(1)).update(anyString(), any(Map.class));
+
+    }
+
+    @DisplayName("testing method sendingVerification(String code, UserDTO user")
+    @Test
+    void it_should_throw_error_there_is_something_wrong() {
+        //given
+        UserDTO userDTO = firstUserDTO();
+
+
+        when(jdbc.update(any(String.class), any(Map.class))).thenThrow(new ApiException("There is an error"));
+        when(jdbc.update(any(String.class), any(SqlParameterSource.class))).thenReturn(1);
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.sendVerificationCode(userDTO, "code1"));
+        //then
+
+        assertEquals("An error occurred. Please try again.", actual.getMessage());
+
     }
 
 
