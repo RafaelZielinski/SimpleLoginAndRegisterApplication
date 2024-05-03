@@ -37,19 +37,11 @@ public interface SQLProvider {
                 """;
     }
 
-    default String fillDataTwoFactorVerifications() {
-        return """
-                INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(1, 2, 'code1', '2024-05-03 18:12:52');
-                INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(2, 1, 'code1', '2024-05-03 18:17:32');
-                INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(3, 3, 'code1', '2024-05-03 18:12:45');
-                """;
-    }
     default String deleteDataRoles() {
         return """
                 DELETE FROM Roles;
                 """;
     }
-
     default String deleteDataUser() {
         return """
                 DELETE FROM Users;
@@ -84,6 +76,16 @@ public interface SQLProvider {
         return """
                 INSERT INTO UserRoles(id, user_id, role_id)
                 VALUES(1, 1, 1);
+                """;
+    }
+
+    default String fillDataTwoFactorVerifications() {
+        return """
+                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(1, 2, 'code1', '2024-05-03T18:12:52');
+                 
+                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(2, 1, 'code2', '2024-05-03T18:17:32');
+                 
+                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(3, 3, 'code3', '2024-05-03T18:12:45');
                 """;
     }
 
