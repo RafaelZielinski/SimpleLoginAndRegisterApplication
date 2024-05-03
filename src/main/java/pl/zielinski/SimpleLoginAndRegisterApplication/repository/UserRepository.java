@@ -18,5 +18,5 @@ public interface UserRepository<T extends User> {
     T update(T data);
     T verifyAccountKey(String key);
     User getUserByEmail(String email);
-    void sendVerificationCode(UserDTO user);
+    void sendVerificationCode(UserDTO user, String verificationCode);
 }

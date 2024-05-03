@@ -8,9 +8,12 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMapper;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
+import pl.zielinski.SimpleLoginAndRegisterApplication.service.SmsService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
 
 import java.util.Collection;
+
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 
 /**
  * @author rafek
@@ -24,6 +27,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository<User> userRepository;
     private final RoleRepository<Role> roleRepository;
+    private final SmsService smsService;
 
     @Override
     public Collection<UserDTO> getUsers() {
@@ -57,6 +61,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void sendVerificationCode(UserDTO user) {
-        userRepository.sendVerificationCode(user);
+        String verificationCode = randomAlphabetic(7).toUpperCase();
+        userRepository.sendVerificationCode(user, verificationCode);
+        smsService.sendSms(user.getPhone(), "From Rafael Zet \nVerification Code \n" + verificationCode);
     }
 }

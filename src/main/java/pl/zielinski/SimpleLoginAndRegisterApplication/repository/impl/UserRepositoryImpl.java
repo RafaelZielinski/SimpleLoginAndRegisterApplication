@@ -23,7 +23,6 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.SmsService;
-import pl.zielinski.SimpleLoginAndRegisterApplication.service.impl.SmsServiceImpl;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -190,18 +189,17 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
 
     //MFA via login
     @Override
-    public void sendVerificationCode(UserDTO user) {
+    public void sendVerificationCode(UserDTO user, String verificationCode) {
         String expirationDate = format(addDays(new Date(), 1), "yyyy-MM-dd HH:mm:ss");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime localDateTime = LocalDateTime.parse(expirationDate, formatter);
 
-        String verificationCode = randomAlphabetic(7).toUpperCase();
+
         log.info("\n expiration Date {} \n verification Code {} \n id {}", localDateTime, verificationCode, user.getId());
 
         try {
             jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, of("id", user.getId()));
             jdbc.update(INSERT_VERIFICATION_CODE_QUERY, getSqlParameterSourceForCreatingVerifyMFA(user.getId(), verificationCode, localDateTime));
-            smsService.sendSms(user.getPhone(), "From Rafael Zet \nVerification Code \n" + verificationCode);
 
         } catch (Exception exception) {
             log.error(exception.getMessage());
