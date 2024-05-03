@@ -27,6 +27,7 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.service.impl.SmsServiceImp
 import javax.sql.DataSource;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
@@ -60,7 +61,6 @@ class UserRepositoryImplTest implements SQLProvider {
     private DataSource dataSource;
 
 
-
     void insertFourDataRoles() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
@@ -77,6 +77,13 @@ class UserRepositoryImplTest implements SQLProvider {
         }
     }
 
+    void deleteTwoFactorVerifications() throws SQLException {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute(deleteDataTwoFactorVerifications());
+        }
+    }
+
     void insertFourUsers() throws SQLException {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
@@ -86,12 +93,33 @@ class UserRepositoryImplTest implements SQLProvider {
     }
 
     void insertThreeAccountVerification() throws SQLException {
-        try(Connection connection = dataSource.getConnection();
-        Statement statement = connection.createStatement()) {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
             statement.execute(deleteDataAccountVerification());
             statement.execute(fillDataAccountVerifications());
         }
 
+    }
+
+    void insertDataToTwoFactorVerifications() throws SQLException {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute(deleteDataTwoFactorVerifications());
+            statement.execute(fillDataTwoFactorVerifications());
+        }
+    }
+
+    int getCountOfTwoFactorVerificationsRecords() {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery("SELECT COUNT (*) FROM TwoFactorVerifications");
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        } catch (Exception exception) {
+            System.out.println(exception.getMessage());
+        }
+        return 0;
     }
 
     @DisplayName("Testing method getUserByEmail(String email)")
@@ -183,6 +211,7 @@ class UserRepositoryImplTest implements SQLProvider {
         //then
         assertEquals("There is no such an user at database exists", actual.getMessage());
     }
+
     @DisplayName("Testing method list()")
     @Test
     void it_should_return_empty_user_list() throws SQLException {
@@ -237,7 +266,7 @@ class UserRepositoryImplTest implements SQLProvider {
         //when
         ApiException actual = assertThrows(ApiException.class, () -> cut.create(user));
         //then
-        assertEquals("There is already taken that email", actual.getMessage() );
+        assertEquals("There is already taken that email", actual.getMessage());
     }
 
     @DisplayName("Testing method verifyAccountKey(String key)")
@@ -272,21 +301,43 @@ class UserRepositoryImplTest implements SQLProvider {
 
     @DisplayName("Testing method sendVerification(UserDto user)")
     @Test
-    void it_should_send_notification_and_write_in_database_line_in_two_factor_verification() throws SQLException
-    {
+    void it_should_send_notification_and_write_in_database_line_in_two_factor_verification() throws SQLException {
         //given
-        SmsServiceImpl smsService = Mockito.mock(SmsServiceImpl.class);
-        Twilio twilio  = Mockito.mock(Twilio.class);
-
         insertFourUsers();
         insertFourDataRoles();
+        deleteTwoFactorVerifications();
         //when
-
-        doNothing().when(smsService).sendSms(any(), any());
-        cut.sendVerificationCode(firstUserDTO(), "code1234");
+        int before = getCountOfTwoFactorVerificationsRecords();
+        cut.sendVerificationCode(firstUserDTO(), "code4");
+        int after = getCountOfTwoFactorVerificationsRecords();
         //then
+        assertEquals(0, before);
+        assertEquals(1, after);
 
     }
+
+    @DisplayName("Testing method sendVerification(UserDto user)")
+    @Test
+    void it_should_throw_error_in_two_factor_verifications() throws SQLException {
+        //given
+        deleteUsers();
+        deleteTwoFactorVerifications();
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.sendVerificationCode(firstUserDTO(), "code1234"));
+        //then
+        assertEquals("An error occurred. Please try again.", actual.getMessage());
+
+    }
+
+//    @Test
+//    void blabla() throws SQLException {
+//        insertFourUsers();
+//        insertFourDataRoles();
+//        fillDataRoles();
+//        insertDataToTwoFactorVerifications();
+//        int before = getCountOfTwoFactorVerificationsRecords();
+//        System.out.println(before);
+//    }
 
     private static MockHttpServletRequest getMockHttpServletRequest() {
         MockHttpServletRequest request = new MockHttpServletRequest();
