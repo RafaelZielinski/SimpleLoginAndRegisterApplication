@@ -22,7 +22,6 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
-import pl.zielinski.SimpleLoginAndRegisterApplication.service.SmsService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -56,7 +55,6 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     private final NamedParameterJdbcTemplate jdbc;
     private final BCryptPasswordEncoder encoder;
     private final RoleRepository<Role> roleRepository;
-    private final SmsService smsService;
 
     @Override
     public User create(User user) {
@@ -199,7 +197,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
 
         try {
             jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, of("id", user.getId()));
-            jdbc.update(INSERT_VERIFICATION_CODE_QUERY, getSqlParameterSourceForCreatingVerifyMFA(user.getId(), verificationCode, localDateTime));
+            jdbc.update(INSERT_TWOFACTORVERIFICATIONS_CODE_QUERY, getSqlParameterSourceForCreatingVerifyMFA(user.getId(), verificationCode, localDateTime));
 
         } catch (Exception exception) {
             log.error(exception.getMessage());
