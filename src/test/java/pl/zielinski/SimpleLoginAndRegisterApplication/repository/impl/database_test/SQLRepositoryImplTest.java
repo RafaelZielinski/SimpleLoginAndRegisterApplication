@@ -31,7 +31,7 @@ import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTest
 @JdbcTest()
 @AutoConfigureTestDatabase(replace = NONE)
 @Import(RoleRepositoryImpl.class)
-class RoleRepositoryImplTest implements RoleProvider {
+class SQLRepositoryImplTest implements SQLProvider {
 
     @Autowired
     private RoleRepository<Role> cut;
