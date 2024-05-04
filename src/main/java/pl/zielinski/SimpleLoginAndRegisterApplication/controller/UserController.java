@@ -84,8 +84,6 @@ public class UserController {
                         .message("User created")
                         .data(Map.of("user", userDTO))
                         .build(), CREATED);
-
-
     }
 
     @GetMapping("/list")
@@ -125,5 +123,19 @@ public class UserController {
 
     }
 
+    @GetMapping("/verify/code/{email}/{code}")
+    public ResponseEntity<HttpResponse> verifyMfaCode(@PathVariable(name = "email") String email, @PathVariable(name = "code") String code) {
+        UserDTO userDTO = userService.verifyMfaCode(email, code);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .message("Login Success via MFA code")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .data(of("user", userDTO, "access_token",
+                                tokenProvider.createAccessToken(getUserPrincipal(userDTO)),
+                                "refresh_token", tokenProvider.createRefreshToken(getUserPrincipal(userDTO))))
+                        .build());
 
+    }
 }
