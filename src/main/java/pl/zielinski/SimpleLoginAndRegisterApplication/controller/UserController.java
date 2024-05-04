@@ -1,5 +1,6 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,14 +17,14 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.form.LoginForm;
 import pl.zielinski.SimpleLoginAndRegisterApplication.provider.TokenProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.RoleService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
+import pl.zielinski.SimpleLoginAndRegisterApplication.utils.ResponseProvider;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 import static java.time.LocalDateTime.now;
 import static java.util.Map.of;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.security.authentication.UsernamePasswordAuthenticationToken.unauthenticated;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.mapper.RoleDTOMapper.toRole;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMapper.toUser;
@@ -137,5 +138,15 @@ public class UserController {
                                 "refresh_token", tokenProvider.createRefreshToken(getUserPrincipal(userDTO))))
                         .build());
 
+    }
+
+    @GetMapping("/error")
+    public ResponseEntity<HttpResponse> handleError(HttpServletRequest request) {
+        return new ResponseEntity<>(HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .reason("There is no mapping for a " + request.getMethod() + " request for this path on the server")
+                        .status(NOT_FOUND)
+                        .statusCode(NOT_FOUND.value())
+                        .build(), NOT_FOUND);
     }
 }
