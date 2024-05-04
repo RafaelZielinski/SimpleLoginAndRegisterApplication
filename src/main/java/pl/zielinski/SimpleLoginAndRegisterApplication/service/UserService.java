@@ -18,6 +18,6 @@ public interface UserService {
     Collection<UserDTO> getUsers();
     UserDTO getUser(Long id);
     UserDTO verifyAccountKey(String key);
-
     void sendVerificationCode(UserDTO user);
+    UserDTO verifyMfaCode(String email, String code);
 }
