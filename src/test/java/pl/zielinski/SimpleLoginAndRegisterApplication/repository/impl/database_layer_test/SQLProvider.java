@@ -1,4 +1,4 @@
-package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_test;
+package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_layer_test;
 
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
 import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
@@ -81,11 +81,11 @@ public interface SQLProvider {
 
     default String fillDataTwoFactorVerifications() {
         return """
-                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(1, 2, 'code1', '2024-05-03T18:12:52');
+                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(1, 2, 'code1', '2028-05-03T18:12:52');
                  
-                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(2, 1, 'code2', '2024-05-03T18:17:32');
+                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(2, 1, 'code2', '2028-05-03T18:17:32');
                  
-                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(3, 3, 'code3', '2024-05-03T18:12:45');
+                 INSERT INTO TwoFactorVerifications(id, user_id,code,expire_date) VALUES(3, 3, 'code3', '2028-05-03T18:12:45');
                 """;
     }
 
@@ -122,11 +122,12 @@ public interface SQLProvider {
 
     default User beforeUpdating() {
         return User.builder()
+                .id(1L)
                 .firstName("Rafał")
                 .lastName("Zieliński")
                 .email("rafekzielinski@wp.pl")
                 .password("password")
-                .age(27L)
+                .age(26L)
                 .enabled(true)
                 .isNotLocked(true)
                 .isUsingMfa(false)
