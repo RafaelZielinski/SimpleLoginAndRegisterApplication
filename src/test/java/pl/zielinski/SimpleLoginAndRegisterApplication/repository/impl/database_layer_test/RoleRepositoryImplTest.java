@@ -1,4 +1,4 @@
-package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_test;
+package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_layer_test;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

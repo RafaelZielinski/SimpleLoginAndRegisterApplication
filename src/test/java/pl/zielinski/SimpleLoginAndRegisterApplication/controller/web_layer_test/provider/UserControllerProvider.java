@@ -26,10 +26,11 @@ public interface UserControllerProvider {
                 .age(15L)
                 .enabled(true)
                 .isNotLocked(true)
-                .isUsingMfa(false)
+                .isUsingMfa(true)
                 .createdAt(LocalDateTime.now())
                 .roleName("ROLE_USER")
                 .permissions("READ:USER,READ:CUSTOMER")
+                .phone("+48722145931")
                 .build();
     }
 

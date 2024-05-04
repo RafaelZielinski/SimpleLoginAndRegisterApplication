@@ -397,7 +397,58 @@ class UserControllerTest implements UserControllerProvider {
                 .andExpect(jsonPath("$.reason").value("This link is not valid."));
     }
 
+    @DisplayName("Testing method verifyMfaCode(email, code)")
+    @Test
+    void it_should_log_in_after_verify_code() throws Exception {
+        //given
+        UserDTO expected = firstUserDTO();
+        //when
+        when(tokenProvider.createAccessToken(any())).thenReturn("mockedAccessToken");
+        when(tokenProvider.createRefreshToken(any())).thenReturn("mockedRefreshToken");
+        when(userService.verifyMfaCode(anyString(), anyString())).thenReturn(expected);
+        when(userService.getUserByEmail(any())).thenReturn(firstUserDTO());
+        when(roleService.getRoleByUserId(any())).thenReturn(firstRoleDTO());
+        //then
+        mockMvc.perform(get("/users/verify/code/rafekzielinski@wp.pl/AZBSNT")
+                        .contentType(APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Login Success via MFA code"))
+                .andExpect(jsonPath("$.length()").value(5))
+                .andExpect(jsonPath("$.timeStamp").exists())
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.data.refresh_token").value("mockedRefreshToken"))
+                .andExpect(jsonPath("$.data.access_token").value("mockedAccessToken"))
+                .andExpect(jsonPath("$.data.length()").value(3))
+                .andExpect(jsonPath("$.data.user").exists());
+    }
 
+    @DisplayName("Testing method verifyMfaCode(email, code)")
+    @Test
+    void it_should_throw_exception_there_code_has_been_expired() throws Exception {
+        //given
+        UserDTO expected = firstUserDTO();
+        //when
+        when(tokenProvider.createAccessToken(any())).thenReturn("mockedAccessToken");
+        when(tokenProvider.createRefreshToken(any())).thenReturn("mockedRefreshToken");
+        when(userService.verifyMfaCode(anyString(), anyString())).thenThrow(new ApiException("This code has been expired. Please try again later"));
+        when(userService.getUserByEmail(any())).thenReturn(firstUserDTO());
+        when(roleService.getRoleByUserId(any())).thenReturn(firstRoleDTO());
+        //then
+        mockMvc.perform(get("/users/verify/code/rafekzielinski@wp.pl/AZBSNT")
+                        .contentType(APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason").value("This code has been expired. Please try again later"))
+                .andExpect(jsonPath("$.message").doesNotExist())
+                .andExpect(jsonPath("$.length()").value(5))
+                .andExpect(jsonPath("$.timeStamp").exists())
+                .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.statusCode").value(400))
+                .andExpect(jsonPath("$.data.refresh_token").doesNotExist())
+                .andExpect(jsonPath("$.data.access_token").doesNotExist())
+                .andExpect(jsonPath("$.data").doesNotExist());
 
-
+    }
 }

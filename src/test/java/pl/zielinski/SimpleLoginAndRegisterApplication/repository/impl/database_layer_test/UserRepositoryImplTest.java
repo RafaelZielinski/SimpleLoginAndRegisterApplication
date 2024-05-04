@@ -1,10 +1,7 @@
-package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_test;
+package pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.database_layer_test;
 
-import com.twilio.Twilio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
@@ -12,16 +9,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import pl.zielinski.SimpleLoginAndRegisterApplication.configuration.PasswordConfig;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
-import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.RoleRepositoryImpl;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.UserRepositoryImpl;
-import pl.zielinski.SimpleLoginAndRegisterApplication.service.SmsService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.impl.SmsServiceImpl;
 
 import javax.sql.DataSource;
@@ -34,8 +30,6 @@ import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE;
 
 /**
@@ -48,7 +42,7 @@ import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTest
 @ActiveProfiles("test")
 @JdbcTest()
 @AutoConfigureTestDatabase(replace = NONE)
-@Import({UserRepositoryImpl.class, PasswordConfig.class, RoleRepositoryImpl.class, SmsServiceImpl.class})
+@Import({UserRepositoryImpl.class, PasswordConfig.class, RoleRepositoryImpl.class})
 class UserRepositoryImplTest implements SQLProvider {
 
     @Autowired
@@ -250,7 +244,7 @@ class UserRepositoryImplTest implements SQLProvider {
         //then
         assertEquals("Rafał", actual.getFirstName());
         assertEquals("Zieliński", actual.getLastName());
-        assertEquals(27L, actual.getAge());
+        assertEquals(26L, actual.getAge());
         assertFalse(actual.isEnabled());
         assertTrue(actual.isNotLocked());
         assertFalse(actual.isUsingMfa());
@@ -330,6 +324,42 @@ class UserRepositoryImplTest implements SQLProvider {
 
     }
 
+
+    @DisplayName("Testing method verifyMfaCode(String email, String code)")
+    @Test
+    void it_should_with_success_verify_code() throws SQLException {
+        //given
+        User expected = beforeUpdating();
+        insertFourDataRoles();
+        insertFourUsers();
+        insertDataToTwoFactorVerifications();
+
+        //when
+        User actual = cut.verifyMfaCode("rafekzielinski@wp.pl", "code2");
+        //then
+        System.out.println(actual.toString());
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getAge(), actual.getAge());
+        assertEquals(expected.getFirstName(), actual.getFirstName());
+        assertEquals(expected.getLastName(), actual.getLastName());
+    }
+
+    @DisplayName("Testing method verifyMfaCode(String email, String code)")
+    @Test
+    void it_should_throw_exception_there_is_some_error() throws SQLException {
+        //given
+        User expected = beforeUpdating();
+        insertFourDataRoles();
+        insertFourUsers();
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.verifyMfaCode("rafekzielinski@wp.pl", "code2"));
+        //then
+        assertEquals("This code is not valid. Please login again." , actual.getMessage());
+
+
+
+
+    }
 
     private static MockHttpServletRequest getMockHttpServletRequest() {
         MockHttpServletRequest request = new MockHttpServletRequest();

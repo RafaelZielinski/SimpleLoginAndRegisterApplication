@@ -17,6 +17,8 @@ public class UserQuery {
     public static final String SELECT_USER_BY_ACCOUNT_URL_QUERY = "SELECT * FROM Users WHERE id = (SELECT user_id FROM AccountVerifications WHERE url = :url)";
     public static final String DELETE_USER_IN_ACCOUNT_VERIFICATIONS_BY_KEY_QUERY = "DELETE FROM AccountVerifications WHERE url = :key";
     public static final String DELETE_VERIFICATION_CODE_BY_USER_ID = "DELETE FROM TwoFactorVerifications WHERE user_id = :id";
-    public static final String INSERT_TWOFACTORVERIFICATIONS_CODE_QUERY = "INSERT INTO TwoFactorVerifications(user_id, code, expire_date) VALUES(:id, :url, :expiration)";
+    public static final String INSERT_TWO_FACTOR_VERIFICATIONS_CODE_QUERY = "INSERT INTO TwoFactorVerifications(user_id, code, expire_date) VALUES(:id, :url, :expiration)";
+    public static final String SELECT_CODE_MFA_EXPIRATION_DATE = "SELECT expire_date < NOW() AS is_expired FROM TwoFactorVerifications WHERE code = :code";
+    public static final String SELECT_USER_BY_USER_MFA_CODE_QUERY = "SELECT * FROM Users WHERE id = (SELECT user_id FROM TwoFactorVerifications WHERE code = :code)";
 
 }

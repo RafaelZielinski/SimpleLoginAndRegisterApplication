@@ -45,7 +45,8 @@ public class SecurityConfiguration {
             "/users/login/**",
             "/users/register/**",
             "/users/verify/account/**",
-            "/roles/**"
+            "/roles/**",
+            "/users/verify/code/**"
     };
 
     @Bean

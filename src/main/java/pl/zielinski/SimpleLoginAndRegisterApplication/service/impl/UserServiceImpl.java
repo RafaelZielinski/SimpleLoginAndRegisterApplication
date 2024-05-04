@@ -14,6 +14,7 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
 import java.util.Collection;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMapper.fromUser;
 
 /**
  * @author rafek
@@ -36,27 +37,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO createUser(User user) {
-        return UserDTOMapper.fromUser(userRepository.create(user), roleRepository.getRoleByUserId(user.getId()));
+        return fromUser(userRepository.create(user), roleRepository.getRoleByUserId(user.getId()));
     }
 
     @Override
     public UserDTO getUserByEmail(String email) {
-        return UserDTOMapper.fromUser(userRepository.getUserByEmail(email));
+        return fromUser(userRepository.getUserByEmail(email));
     }
 
     @Override
     public UserDTO updateUserData(User user) {
-        return UserDTOMapper.fromUser(userRepository.update(user));
+        return fromUser(userRepository.update(user));
     }
 
     @Override
     public UserDTO getUser(Long id) {
-        return UserDTOMapper.fromUser(userRepository.get(id));
+        return fromUser(userRepository.get(id));
     }
 
     @Override
     public UserDTO verifyAccountKey(String key) {
-        return UserDTOMapper.fromUser(userRepository.verifyAccountKey(key));
+        return fromUser(userRepository.verifyAccountKey(key));
     }
 
     @Override
@@ -64,5 +65,10 @@ public class UserServiceImpl implements UserService {
         String verificationCode = randomAlphabetic(7).toUpperCase();
         userRepository.sendVerificationCode(user, verificationCode);
         smsService.sendSms(user.getPhone(), "From Rafael Zet \nVerification Code \n" + verificationCode);
+    }
+
+    @Override
+    public UserDTO verifyMfaCode(String email, String code) {
+        return fromUser(userRepository.verifyMfaCode(email, code));
     }
 }

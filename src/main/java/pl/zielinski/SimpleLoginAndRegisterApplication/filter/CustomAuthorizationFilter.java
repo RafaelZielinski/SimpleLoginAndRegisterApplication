@@ -41,7 +41,8 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             "/users/login/**",
             "/users/register/**",
             "/users/verify/account/**",
-            "/roles/list"
+            "/roles/list",
+            "/users/verify/code/**"
     };
 
     @Override

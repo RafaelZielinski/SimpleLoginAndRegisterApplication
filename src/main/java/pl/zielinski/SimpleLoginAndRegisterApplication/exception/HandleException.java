@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.HttpResponse;
+import pl.zielinski.SimpleLoginAndRegisterApplication.utils.ResponseProvider;
 
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -71,78 +71,70 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<HttpResponse> IllegalArgumentException(IllegalArgumentException exception) {
         log.error(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-        return createErrorHttpResponse(INTERNAL_SERVER_ERROR, exception.getMessage(), exception);
+        return ResponseProvider.createResponseEntity(INTERNAL_SERVER_ERROR, exception.getMessage(), exception);
     }
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public ResponseEntity<HttpResponse> SQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException exception) {
         log.error(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-        return createErrorHttpResponse(BAD_REQUEST, exception.getMessage().contains("Duplicate entry") ? "Information already exists" : exception.getMessage(), exception);
+        return ResponseProvider.createResponseEntity(BAD_REQUEST, exception.getMessage().contains("Duplicate entry") ? "Information already exists" : exception.getMessage(), exception);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<HttpResponse> BadCredentialsException(BadCredentialsException exception) {
         log.error(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-        return createErrorHttpResponse(BAD_REQUEST, exception.getMessage() + ", Incorrect email or password", exception);
+        return ResponseProvider.createResponseEntity(BAD_REQUEST, exception.getMessage() + ", Incorrect email or password", exception);
     }
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<HttpResponse> apiException(ApiException exception) {
         log.error(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-        return createErrorHttpResponse(BAD_REQUEST, exception.getMessage(), exception);
+        return ResponseProvider.createResponseEntity(BAD_REQUEST, exception.getMessage(), exception);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<HttpResponse> accessDeniedException(AccessDeniedException exception) {
         log.error(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-        return createErrorHttpResponse(HttpStatus.FORBIDDEN, "Access denied. You don\'t have access", exception);
+        return ResponseProvider.createResponseEntity(HttpStatus.FORBIDDEN, "Access denied. You don\'t have access", exception);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<HttpResponse> exception(Exception exception) {
         log.error(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-        return createErrorHttpResponse(INTERNAL_SERVER_ERROR, exception.getMessage(), exception);
+        return ResponseProvider.createResponseEntity(INTERNAL_SERVER_ERROR, exception.getMessage(), exception);
     }
 
     @ExceptionHandler(EmptyResultDataAccessException.class)
     public ResponseEntity<HttpResponse> emptyResultDataAccessException(EmptyResultDataAccessException exception) {
         log.error(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-        return createErrorHttpResponse(BAD_REQUEST, exception.getMessage(), exception);
+        return ResponseProvider.createResponseEntity(BAD_REQUEST, exception.getMessage(), exception);
     }
 
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<HttpResponse> disableException(DisabledException exception) {
         log.error(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-        return createErrorHttpResponse(BAD_REQUEST, "User account is currently disabled", exception);
+        return ResponseProvider.createResponseEntity(BAD_REQUEST, "User account is currently disabled", exception);
     }
 
     @ExceptionHandler(LockedException.class)
     public ResponseEntity<HttpResponse> lockedException(LockedException exception) {
         log.error(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-        return createErrorHttpResponse(BAD_REQUEST, exception.getMessage() + " to many failed attempts.", exception);
+        return ResponseProvider.createResponseEntity(BAD_REQUEST, exception.getMessage() + " to many failed attempts.", exception);
     }
 
     @ExceptionHandler(JWTDecodeException.class)
     public ResponseEntity<HttpResponse> exception(JWTDecodeException exception) {
         log.error(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-        return createErrorHttpResponse(INTERNAL_SERVER_ERROR, "Could not decode the token", exception);
+        return ResponseProvider.createResponseEntity(INTERNAL_SERVER_ERROR, "Could not decode the token", exception);
     }
 
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<HttpResponse> dataAccessException(DataAccessException exception) {
         log.error(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-        return createErrorHttpResponse(BAD_REQUEST, processErrorMessage(exception.getMessage()), exception);
+        return ResponseProvider.createResponseEntity(BAD_REQUEST, processErrorMessage(exception.getMessage()), exception);
     }
 
-    private ResponseEntity<HttpResponse> createErrorHttpResponse(HttpStatus status, String reason, Exception exception) {
-        return new ResponseEntity<>(HttpResponse.builder()
-                .timeStamp(LocalTime.now().toString())
-                .developerMessage(exception.getMessage())
-                .reason(reason)
-                .status(status)
-                .statusCode(status.value())
-                .build(), status);
-    }
+
 
     private String processErrorMessage(String errorMessage) {
         if (errorMessage != null) {

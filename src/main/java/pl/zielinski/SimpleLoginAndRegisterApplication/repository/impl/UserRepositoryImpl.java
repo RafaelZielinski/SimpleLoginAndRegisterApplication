@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
@@ -32,7 +33,6 @@ import java.util.UUID;
 
 import static java.util.Map.of;
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.time.DateFormatUtils.format;
 import static org.apache.commons.lang3.time.DateUtils.addDays;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleType.ROLE_USER;
@@ -80,6 +80,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     private String getVerificationUrl(String key, String type) {
         return ServletUriComponentsBuilder.fromCurrentContextPath().path("/users/verify/" + type + "/" + key).toUriString();
     }
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = getUserByEmail(email);
@@ -197,11 +198,44 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
 
         try {
             jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, of("id", user.getId()));
-            jdbc.update(INSERT_TWOFACTORVERIFICATIONS_CODE_QUERY, getSqlParameterSourceForCreatingVerifyMFA(user.getId(), verificationCode, localDateTime));
+            jdbc.update(INSERT_TWO_FACTOR_VERIFICATIONS_CODE_QUERY, getSqlParameterSourceForCreatingVerifyMFA(user.getId(), verificationCode, localDateTime));
 
         } catch (Exception exception) {
             log.error(exception.getMessage());
             throw new ApiException("An error occurred. Please try again.");
+        }
+    }
+
+    @Override
+    public User verifyMfaCode(String email, String code) {
+        if (isVerificationMfaCodeExpired(code))
+            throw new ApiException("This code has been expired. Please try again later");
+        try {
+            User userByCode = jdbc.queryForObject(SELECT_USER_BY_USER_MFA_CODE_QUERY, of("code", code), new UserRowMapper());
+            User userByEmail = jdbc.queryForObject(SELECT_USER_BY_EMAIL_QUERY, of("email", email), new UserRowMapper());
+            if (userByEmail.getEmail().equals(userByCode.getEmail())) {
+                jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, of("id", userByCode.getId()));
+                return userByCode;
+            } else {
+                throw new ApiException("Unable to find a record");
+            }
+        } catch (EmptyResultDataAccessException exception) {
+            throw new ApiException("Could not find a record");
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("An error occurred. Please try again");
+        }
+
+    }
+
+    private Boolean isVerificationMfaCodeExpired(String code) {
+        try {
+            return jdbc.queryForObject(SELECT_CODE_MFA_EXPIRATION_DATE, of("code", code), Boolean.class);
+        } catch (EmptyResultDataAccessException exception) {
+            throw new ApiException("This code is not valid. Please login again.");
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("An error occurred. Please try again");
         }
     }
 
