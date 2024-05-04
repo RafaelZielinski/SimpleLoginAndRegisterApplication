@@ -19,7 +19,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
 import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
@@ -28,7 +27,6 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.UserReposi
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.RoleProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.impl.provider.UserProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.UserRowMapper;
-import pl.zielinski.SimpleLoginAndRegisterApplication.service.impl.SmsServiceImpl;
 
 import java.util.*;
 
@@ -60,7 +58,6 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
 
     @InjectMocks
     UserRepositoryImpl cut;
-
 
 
     @BeforeEach
@@ -253,7 +250,6 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         //when
         when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
                 .thenReturn(expected);
-
         User actual = cut.getUserByEmail(email);
         //then
         assertEquals(expected, actual);
@@ -268,7 +264,6 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         //when
         when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
                 .thenThrow(EmptyResultDataAccessException.class);
-
         ApiException actual = assertThrows(ApiException.class, () -> cut.getUserByEmail(email));
         //then
         assertEquals("There is no such an user at database exists", actual.getMessage());
@@ -283,7 +278,6 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         //when
         when(jdbc.queryForObject(anyString(), anyMap(), any(UserRowMapper.class)))
                 .thenThrow(NullPointerException.class);
-
         ApiException actual = assertThrows(ApiException.class, () -> cut.getUserByEmail(email));
         //then
         assertEquals("An error occured", actual.getMessage());
@@ -305,9 +299,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
                     keyHolder.getKeyList().add(new HashMap<>(Map.of("id", 1)));
                     return 1;
                 });
-
         doNothing().when(roleRepository).addRoleToUser(anyLong(), anyString());
-
         //when
         User actual = cut.create(expected);
         //then
@@ -322,7 +314,6 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         User user = firstUser();
         when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class)))
                 .thenReturn(1);
-
         //when
         ApiException actual = assertThrows(ApiException.class, () -> cut.create(user));
         //then
@@ -338,7 +329,6 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         String expectedUrl = "http://example.com/users/verify/type/key";
         //when
         when(jdbc.queryForObject(any(String.class), any(Map.class), any(RowMapper.class))).thenReturn(expected);
-
         User actual = cut.verifyAccountKey("key");
         //then
         assertEquals(expected.isEnabled(), actual.isEnabled());
@@ -359,14 +349,11 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
     void it_should_with_success_save_mfa_code_to_database() {
         //given
         UserDTO userDTO = firstUserDTO();
-
-
-       when(jdbc.update(any(String.class), any(Map.class))).thenReturn(1);
-       when(jdbc.update(any(String.class), any(SqlParameterSource.class))).thenReturn(1);
+        when(jdbc.update(any(String.class), any(Map.class))).thenReturn(1);
+        when(jdbc.update(any(String.class), any(SqlParameterSource.class))).thenReturn(1);
         //when
         cut.sendVerificationCode(userDTO, "code1");
         //then
-
         verify(jdbc, times(1)).update(anyString(), any(SqlParameterSource.class));
         verify(jdbc, times(1)).update(anyString(), any(Map.class));
 
@@ -377,16 +364,44 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
     void it_should_throw_error_there_is_something_wrong() {
         //given
         UserDTO userDTO = firstUserDTO();
-
-
         when(jdbc.update(any(String.class), any(Map.class))).thenThrow(new ApiException("There is an error"));
         when(jdbc.update(any(String.class), any(SqlParameterSource.class))).thenReturn(1);
         //when
         ApiException actual = assertThrows(ApiException.class, () -> cut.sendVerificationCode(userDTO, "code1"));
         //then
-
         assertEquals("An error occurred. Please try again.", actual.getMessage());
+    }
 
+    @DisplayName("testing method verifyMfaCode(String email, String code)")
+    @Test
+    void it_should_throw_error_code_is_invalid() {
+        //given
+        String email = "rafekzielinski@wp.pl";
+        String code = "SFDSAF";
+        UserDTO userDTO = firstUserDTO();
+        when(jdbc.queryForObject(anyString(), any(Map.class), eq(Boolean.class))).thenThrow(new EmptyResultDataAccessException("This code is not valid. Please login again.", 0));
+        //when
+        ApiException actual = assertThrows(ApiException.class, () -> cut.verifyMfaCode("rafekzielinski@wp.pl", "DSFDSAF"));
+        //then
+        assertEquals("This code is not valid. Please login again.", actual.getMessage());
+    }
+
+    @DisplayName("testing method verifyMfaCode(String email, String code)")
+    @Test
+    void it_should_verify_code_with_success() {
+        //given
+        User expected = firstUser();
+        String email = "rafekzielinski@wp.pl";
+        String code = "SFDSAF";
+        UserDTO userDTO = firstUserDTO();
+        when(jdbc.queryForObject(anyString(), any(Map.class), eq(Boolean.class))).thenReturn(Boolean.FALSE);
+        when(jdbc.queryForObject(anyString(), any(Map.class), any(RowMapper.class))).thenReturn(firstUser());
+        //when
+        User actual=  cut.verifyMfaCode("rafekzielinski@wp.pl", "DSFDSAF");
+        //then
+        assertEquals(expected.getId(), expected.getId());
+        assertEquals(expected.getFirstName(), expected.getFirstName());
+        assertEquals(expected.getLastName(), expected.getLastName());
     }
 
 
