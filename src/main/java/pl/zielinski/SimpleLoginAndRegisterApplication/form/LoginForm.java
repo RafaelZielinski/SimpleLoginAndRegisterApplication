@@ -18,7 +18,7 @@ import lombok.ToString;
 @Setter
 public class LoginForm {
     @NotEmpty(message = "Email can not be empty")
-    @Email(message = "Invalid email. Please eneter a valid email address")
+    @Email(message = "Invalid email. Please enter a valid email address")
     private String email;
     @NotEmpty(message = "Password can not be empty")
     private String password;
