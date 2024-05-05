@@ -174,7 +174,6 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         try {
             User user = jdbc.queryForObject(SELECT_USER_BY_ACCOUNT_URL_QUERY, of("url", getVerificationUrl(key, ACCOUNT.getType())), new UserRowMapper());
             jdbc.update(UPDATE_USER_ENABLED_QUERY, of("enabled", true, "id", user.getId()));
-            //I choose to delete after this operation
             jdbc.update(DELETE_USER_IN_ACCOUNT_VERIFICATIONS_BY_KEY_QUERY, Map.of("key", key));
             return user;
         } catch (EmptyResultDataAccessException exception) {
