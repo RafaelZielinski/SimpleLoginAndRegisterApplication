@@ -121,7 +121,7 @@ public class UserController {
                         .statusCode(OK.value())
                         .build());
     }
-
+    //verify mfa code
     @GetMapping("/verify/code/{email}/{code}")
     public ResponseEntity<HttpResponse> verifyMfaCode(@PathVariable(name = "email") String email, @PathVariable(name = "code") String code) {
         UserDTO userDTO = userService.verifyMfaCode(email, code);
