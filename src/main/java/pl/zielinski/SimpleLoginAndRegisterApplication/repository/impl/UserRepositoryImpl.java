@@ -56,7 +56,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     private final RoleRepository<Role> roleRepository;
 
     @Override
-    public User create(User user) {
+    public User create(User user, String verificationUrl) {
         if (getEmailCount(user.getEmail()) > 0) {
             throw new ApiException("There is already taken that email");
         }
@@ -67,10 +67,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         user.setId(requireNonNull(key.getKey()).longValue());
         log.info("Adding user {} ", user);
         roleRepository.addRoleToUser(user.getId(), ROLE_USER.name());
-        String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
-        log.info(verificationUrl);
         jdbc.update(INSERT_ACCOUNT_VERIFICATION_URL_QUERY, Map.of("userId", user.getId(), "url", verificationUrl));
-        //for now there is no mechanism of sending activation link to email
         user.setEnabled(false);
         user.setNotLocked(true);
         return user;

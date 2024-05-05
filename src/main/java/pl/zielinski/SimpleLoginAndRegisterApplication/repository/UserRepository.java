@@ -12,7 +12,7 @@ import java.util.Collection;
  * @since 2023}-12-22
  */
 public interface UserRepository<T extends User> {
-    T create(T data);
+    T create(T data, String verificationUrl);
 
     Collection<T> list();
 
