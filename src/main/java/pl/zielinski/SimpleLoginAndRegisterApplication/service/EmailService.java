@@ -7,5 +7,5 @@ package pl.zielinski.SimpleLoginAndRegisterApplication.service;
  * @since 05/05/2024
  */
 public interface EmailService {
-    void sendEmail(String to, String message);
+    void sendSimpleMailMessage(String to, String name, String token);
 }
