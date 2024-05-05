@@ -12,7 +12,6 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.rowmapper.RoleRowMapper;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleType.ROLE_USER;
@@ -87,7 +86,7 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
         log.info("Fetching role for user id: {} ", userId);
         try {
             return jdbc.queryForObject(SELECT_ROLE_BY_USER_ID, Map.of("id", userId), new RoleRowMapper());
-        }catch(EmptyResultDataAccessException exception) {
+        } catch (EmptyResultDataAccessException exception) {
             log.error(exception.getMessage());
             //repair that
             throw new ApiException("No role found by name: " + ROLE_USER.name());

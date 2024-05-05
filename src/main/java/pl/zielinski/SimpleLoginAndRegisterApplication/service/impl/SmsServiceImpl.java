@@ -4,7 +4,6 @@ import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 import jakarta.annotation.PostConstruct;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,14 +25,14 @@ public class SmsServiceImpl implements SmsService {
     @Value(value = "${twilio.sid.key}")
     private String SID_KEY;
 
-    @Value(value="${twilio.token.key}")
+    @Value(value = "${twilio.token.key}")
     private String TOKEN_KEY;
 
 
     @PostConstruct
     void init() {
         Twilio.init(SID_KEY, TOKEN_KEY);
-        }
+    }
 
     @Override
     public void sendSms(String to, String messageBody) {
@@ -43,7 +42,5 @@ public class SmsServiceImpl implements SmsService {
                         messageBody)
                 .create();
         log.info(message.toString());
-
-
     }
 }

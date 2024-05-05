@@ -17,7 +17,6 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.form.LoginForm;
 import pl.zielinski.SimpleLoginAndRegisterApplication.provider.TokenProvider;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.RoleService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
-import pl.zielinski.SimpleLoginAndRegisterApplication.utils.ResponseProvider;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -121,7 +120,6 @@ public class UserController {
                         .status(HttpStatus.OK)
                         .statusCode(OK.value())
                         .build());
-
     }
 
     @GetMapping("/verify/code/{email}/{code}")
@@ -137,16 +135,15 @@ public class UserController {
                                 tokenProvider.createAccessToken(getUserPrincipal(userDTO)),
                                 "refresh_token", tokenProvider.createRefreshToken(getUserPrincipal(userDTO))))
                         .build());
-
     }
 
     @GetMapping("/error")
     public ResponseEntity<HttpResponse> handleError(HttpServletRequest request) {
         return new ResponseEntity<>(HttpResponse.builder()
-                        .timeStamp(now().toString())
-                        .reason("There is no mapping for a " + request.getMethod() + " request for this path on the server")
-                        .status(NOT_FOUND)
-                        .statusCode(NOT_FOUND.value())
-                        .build(), NOT_FOUND);
+                .timeStamp(now().toString())
+                .reason("There is no mapping for a " + request.getMethod() + " request for this path on the server")
+                .status(NOT_FOUND)
+                .statusCode(NOT_FOUND.value())
+                .build(), NOT_FOUND);
     }
 }

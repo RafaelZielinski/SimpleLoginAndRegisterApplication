@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.UDPATE_USER_ENABLED_QUERY;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.UPDATE_USER_ENABLED_QUERY;
 
 /**
  * @author rafek
@@ -280,7 +280,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
                 .thenThrow(NullPointerException.class);
         ApiException actual = assertThrows(ApiException.class, () -> cut.getUserByEmail(email));
         //then
-        assertEquals("An error occured", actual.getMessage());
+        assertEquals("An error occurred", actual.getMessage());
     }
 
     // testing User create(User user)
@@ -332,7 +332,7 @@ class UserRepositoryImplTest implements UserProvider, RoleProvider {
         User actual = cut.verifyAccountKey("key");
         //then
         assertEquals(expected.isEnabled(), actual.isEnabled());
-        verify(jdbc).update(eq(UDPATE_USER_ENABLED_QUERY), eq(of("enabled", true, "id", 3L)));
+        verify(jdbc).update(eq(UPDATE_USER_ENABLED_QUERY), eq(of("enabled", true, "id", 3L)));
     }
 
     private static MockHttpServletRequest getMockHttpServletRequest() {

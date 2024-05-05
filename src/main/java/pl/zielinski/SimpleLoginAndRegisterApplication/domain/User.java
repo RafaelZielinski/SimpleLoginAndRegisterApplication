@@ -8,6 +8,8 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
+
 /**
  * @author rafek
  * @version 1.0
@@ -17,7 +19,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonInclude(NON_DEFAULT)
 @SuperBuilder
 public class User {
     private Long id;

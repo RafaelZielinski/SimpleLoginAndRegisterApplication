@@ -13,7 +13,6 @@ import java.time.LocalTime;
  * @since 04/05/2024
  */
 public class ResponseProvider {
-
     public static ResponseEntity<HttpResponse> createResponseEntity(HttpStatus status, String reason, Exception exception) {
         return new ResponseEntity<>(HttpResponse.builder()
                 .timeStamp(LocalTime.now().toString())

@@ -13,7 +13,6 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
  * @since 07/01/2024
  */
 public class UserDTOMapper {
-
     public static UserDTO fromUser(User user) {
         UserDTO userDTOMapper = new UserDTO();
         BeanUtils.copyProperties(user, userDTOMapper);

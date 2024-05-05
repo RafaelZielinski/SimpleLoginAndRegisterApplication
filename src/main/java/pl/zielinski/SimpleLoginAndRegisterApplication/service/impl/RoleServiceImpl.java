@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 public class RoleServiceImpl implements RoleService {
     private final RoleRepository<Role> repository;
 
-
     @Override
     public RoleDTO getRoleByUserId(Long id) {
         return RoleDTOMapper.fromRole(repository.getRoleByUserId(id));

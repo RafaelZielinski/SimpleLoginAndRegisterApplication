@@ -16,10 +16,9 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.provider.TokenProvider;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Arrays.asList;
-import static java.util.Optional.*;
+import static java.util.Optional.ofNullable;
 
 /**
  * @author rafek

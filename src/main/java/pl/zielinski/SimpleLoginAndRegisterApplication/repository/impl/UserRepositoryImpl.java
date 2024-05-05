@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
@@ -37,7 +36,7 @@ import static org.apache.commons.lang3.time.DateFormatUtils.format;
 import static org.apache.commons.lang3.time.DateUtils.addDays;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleType.ROLE_USER;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.VerificationType.ACCOUNT;
-import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.UDPATE_USER_ENABLED_QUERY;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.UPDATE_USER_ENABLED_QUERY;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.query.UserQuery.*;
 
 
@@ -112,7 +111,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         try {
             return jdbc.query(SELECT_USERS_QUERY, new UserRowMapper());
         } catch (Exception exception) {
-            log.error("There is problem with derriving users from database");
+            log.error("There is problem with deriving users from database");
             throw new ApiException("There is problem with list of users from database");
         }
     }
@@ -165,8 +164,8 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             log.error("There is no such user with email {}", email);
             throw new ApiException("There is no such an user at database exists");
         } catch (Exception exception) {
-            log.error("An a problem occured");
-            throw new ApiException("An error occured");
+            log.error("An a problem occurred");
+            throw new ApiException("An error occurred");
         }
     }
 
@@ -174,7 +173,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     public User verifyAccountKey(String key) {
         try {
             User user = jdbc.queryForObject(SELECT_USER_BY_ACCOUNT_URL_QUERY, of("url", getVerificationUrl(key, ACCOUNT.getType())), new UserRowMapper());
-            jdbc.update(UDPATE_USER_ENABLED_QUERY, of("enabled", true, "id", user.getId()));
+            jdbc.update(UPDATE_USER_ENABLED_QUERY, of("enabled", true, "id", user.getId()));
             //I choose to delete after this operation
             jdbc.update(DELETE_USER_IN_ACCOUNT_VERIFICATIONS_BY_KEY_QUERY, Map.of("key", key));
             return user;

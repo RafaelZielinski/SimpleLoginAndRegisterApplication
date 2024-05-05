@@ -13,7 +13,6 @@ import java.sql.SQLException;
  * @since 06/01/2024
  */
 public class UserRowMapper implements RowMapper<User> {
-
     @Override
     public User mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         return User.builder()
@@ -28,5 +27,6 @@ public class UserRowMapper implements RowMapper<User> {
                 .isUsingMfa(resultSet.getBoolean("using_mfa"))
                 .phone(resultSet.getString("phone"))
                 .createdAt(resultSet.getTimestamp("created_date").toLocalDateTime())
-                .build();    }
+                .build();
+    }
 }

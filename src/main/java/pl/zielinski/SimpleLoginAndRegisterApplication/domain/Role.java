@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
+
 /**
  * @author rafek
  * @version 1.0
@@ -17,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonInclude(NON_DEFAULT)
 @SuperBuilder
 public class Role {
     Long id;

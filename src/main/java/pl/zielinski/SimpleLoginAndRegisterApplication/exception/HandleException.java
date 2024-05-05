@@ -134,8 +134,6 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
         return ResponseProvider.createResponseEntity(BAD_REQUEST, processErrorMessage(exception.getMessage()), exception);
     }
 
-
-
     private String processErrorMessage(String errorMessage) {
         if (errorMessage != null) {
             if (errorMessage.contains("Duplicate entry") && errorMessage.contains("AccountVerifications")) {

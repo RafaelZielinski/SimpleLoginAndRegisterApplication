@@ -13,11 +13,18 @@ import java.util.Collection;
  */
 public interface UserService {
     UserDTO createUser(User user);
+
     UserDTO getUserByEmail(String email);
+
     UserDTO updateUserData(User user);
+
     Collection<UserDTO> getUsers();
+
     UserDTO getUser(Long id);
+
     UserDTO verifyAccountKey(String key);
+
     void sendVerificationCode(UserDTO user);
+
     UserDTO verifyMfaCode(String email, String code);
 }
