@@ -38,6 +38,7 @@ import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleTyp
 import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.VerificationType.ACCOUNT;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.UPDATE_USER_ENABLED_QUERY;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.query.UserQuery.*;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.utils.PathProvider.getVerificationUrl;
 
 
 /**
@@ -56,11 +57,12 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     private final RoleRepository<Role> roleRepository;
 
     @Override
-    public User create(User user, String verificationUrl) {
+    public User create(User user) {
         if (getEmailCount(user.getEmail()) > 0) {
             throw new ApiException("There is already taken that email");
         }
-
+        String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
+        log.info(verificationUrl);
         KeyHolder key = new GeneratedKeyHolder();
         SqlParameterSource parameters = getSqlParametersInsertUserSource(user);
         jdbc.update(INSERT_USER_QUERY, parameters, key, new String[]{"id"});
@@ -73,9 +75,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         return user;
     }
 
-    private String getVerificationUrl(String key, String type) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/users/verify/" + type + "/" + key).toUriString();
-    }
+
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

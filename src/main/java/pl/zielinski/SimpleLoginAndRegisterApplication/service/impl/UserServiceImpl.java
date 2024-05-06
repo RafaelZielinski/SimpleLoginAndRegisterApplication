@@ -20,6 +20,7 @@ import java.util.UUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.VerificationType.ACCOUNT;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMapper.fromUser;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.utils.PathProvider.getVerificationUrl;
 
 /**
  * @author rafek
@@ -44,10 +45,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO createUser(User user) {
-        System.out.println(Thread.currentThread().getName());
-        String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
-        log.info(verificationUrl);
-        UserDTO userDTO = fromUser(userRepository.create(user, verificationUrl), roleRepository.getRoleByUserId(user.getId()));
+
+        UserDTO userDTO = fromUser(userRepository.create(user), roleRepository.getRoleByUserId(user.getId()));
         emailService.sendSimpleMailMessage(userDTO.getEmail(), userDTO.getFirstName(),  "hello");
         return userDTO;
     }
@@ -68,7 +67,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO verifyAccountKey(String key) {
+    public UserDTO verifyAccountKey(String key)
+    {
         return fromUser(userRepository.verifyAccountKey(key));
     }
 
@@ -84,7 +84,5 @@ public class UserServiceImpl implements UserService {
         return fromUser(userRepository.verifyMfaCode(email, code));
     }
 
-    private String getVerificationUrl(String key, String type) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/users/verify/" + type + "/" + key).toUriString();
-    }
+
 }
