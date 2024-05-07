@@ -13,6 +13,7 @@ import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.EmailService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.SmsService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
+import pl.zielinski.SimpleLoginAndRegisterApplication.utils.PathProvider;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -45,9 +46,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO createUser(User user) {
-
-        UserDTO userDTO = fromUser(userRepository.create(user), roleRepository.getRoleByUserId(user.getId()));
-        emailService.sendSimpleMailMessage(userDTO.getEmail(), userDTO.getFirstName(),  "hello");
+        String verificationUrl = PathProvider.getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
+        UserDTO userDTO = fromUser(userRepository.create(user, verificationUrl), roleRepository.getRoleByUserId(user.getId()));
+        emailService.sendSimpleMailMessage(userDTO.getEmail(), userDTO.getFirstName(),  verificationUrl);
         return userDTO;
     }
 
