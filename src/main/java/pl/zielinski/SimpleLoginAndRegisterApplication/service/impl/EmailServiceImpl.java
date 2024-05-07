@@ -9,6 +9,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import pl.zielinski.SimpleLoginAndRegisterApplication.exception.ApiException;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.EmailService;
+import pl.zielinski.SimpleLoginAndRegisterApplication.utils.EmailUtils;
+
+import static pl.zielinski.SimpleLoginAndRegisterApplication.utils.EmailUtils.getEmailMessage;
 
 /**
  * @author rafek
@@ -28,14 +31,13 @@ public class EmailServiceImpl implements EmailService {
 
     @Async()
     @Override
-    public void sendSimpleMailMessage(String to, String name, String token) {
+    public void sendSimpleMailMessage(String to, String name, String verificationUrl) {
         try {
-            System.out.println(Thread.currentThread().getName());
             SimpleMailMessage message = new SimpleMailMessage();
             message.setSubject("New user account verification");
             message.setFrom(fromEmail);
             message.setTo(to);
-            message.setText("Hej it's working haha");
+            message.setText(getEmailMessage(name, fromEmail, verificationUrl));
             mailSender.send(message);
         } catch (Exception e) {
             throw new ApiException(e.getMessage());

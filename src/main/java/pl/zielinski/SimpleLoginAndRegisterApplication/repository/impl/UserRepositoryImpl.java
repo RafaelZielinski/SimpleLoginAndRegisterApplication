@@ -57,11 +57,10 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     private final RoleRepository<Role> roleRepository;
 
     @Override
-    public User create(User user) {
+    public User create(User user, String verificationUrl) {
         if (getEmailCount(user.getEmail()) > 0) {
             throw new ApiException("There is already taken that email");
         }
-        String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
         log.info(verificationUrl);
         KeyHolder key = new GeneratedKeyHolder();
         SqlParameterSource parameters = getSqlParametersInsertUserSource(user);
