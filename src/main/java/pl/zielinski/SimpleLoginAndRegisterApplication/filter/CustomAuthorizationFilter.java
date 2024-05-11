@@ -44,6 +44,13 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             "/users/verify/code/**"
     };
 
+    private final String[] SWAGGER_WHITELIST = {
+            "/swagger-ui/**",
+            "/api-docs/**",
+            "/swagger-resources/**",
+            "/swagger-resources",
+    };
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
@@ -68,6 +75,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         return request.getHeader(AUTHORIZATION) == null ||
                 !request.getHeader(AUTHORIZATION).startsWith(TOKEN_PREFIX) ||
                 request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD) ||
+                asList(SWAGGER_WHITELIST).contains(request.getRequestURI()) ||
                 asList(PUBLIC_ROUTES).contains(request.getRequestURI());
     }
 
