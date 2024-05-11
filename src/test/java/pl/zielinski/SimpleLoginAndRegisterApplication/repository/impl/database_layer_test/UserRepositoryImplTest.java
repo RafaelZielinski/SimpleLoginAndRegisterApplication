@@ -240,7 +240,7 @@ class UserRepositoryImplTest implements SQLProvider {
         deleteUsers();
         User user = beforeUpdating();
         //when
-        User actual = cut.create(user);
+        User actual = cut.create(user, "verificationUrl");
         //then
         assertEquals("Rafał", actual.getFirstName());
         assertEquals("Zieliński", actual.getLastName());
@@ -258,7 +258,7 @@ class UserRepositoryImplTest implements SQLProvider {
         insertFourUsers();
         User user = beforeUpdating();
         //when
-        ApiException actual = assertThrows(ApiException.class, () -> cut.create(user));
+        ApiException actual = assertThrows(ApiException.class, () -> cut.create(user, "verificationUrl"));
         //then
         assertEquals("There is already taken that email", actual.getMessage());
     }

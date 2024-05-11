@@ -38,6 +38,7 @@ import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.RoleTyp
 import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.VerificationType.ACCOUNT;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.query.RoleQuery.UPDATE_USER_ENABLED_QUERY;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.query.UserQuery.*;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.utils.PathProvider.getVerificationUrl;
 
 
 /**
@@ -56,29 +57,24 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     private final RoleRepository<Role> roleRepository;
 
     @Override
-    public User create(User user) {
+    public User create(User user, String verificationUrl) {
         if (getEmailCount(user.getEmail()) > 0) {
             throw new ApiException("There is already taken that email");
         }
-
+        log.info(verificationUrl);
         KeyHolder key = new GeneratedKeyHolder();
         SqlParameterSource parameters = getSqlParametersInsertUserSource(user);
         jdbc.update(INSERT_USER_QUERY, parameters, key, new String[]{"id"});
         user.setId(requireNonNull(key.getKey()).longValue());
         log.info("Adding user {} ", user);
         roleRepository.addRoleToUser(user.getId(), ROLE_USER.name());
-        String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
-        log.info(verificationUrl);
         jdbc.update(INSERT_ACCOUNT_VERIFICATION_URL_QUERY, Map.of("userId", user.getId(), "url", verificationUrl));
-        //for now there is no mechanism of sending activation link to email
         user.setEnabled(false);
         user.setNotLocked(true);
         return user;
     }
 
-    private String getVerificationUrl(String key, String type) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/users/verify/" + type + "/" + key).toUriString();
-    }
+
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

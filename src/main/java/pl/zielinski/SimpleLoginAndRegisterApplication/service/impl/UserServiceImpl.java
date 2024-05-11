@@ -1,20 +1,27 @@
 package pl.zielinski.SimpleLoginAndRegisterApplication.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.Role;
 import pl.zielinski.SimpleLoginAndRegisterApplication.domain.User;
 import pl.zielinski.SimpleLoginAndRegisterApplication.dto.UserDTO;
 import pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMapper;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.RoleRepository;
 import pl.zielinski.SimpleLoginAndRegisterApplication.repository.UserRepository;
+import pl.zielinski.SimpleLoginAndRegisterApplication.service.EmailService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.SmsService;
 import pl.zielinski.SimpleLoginAndRegisterApplication.service.UserService;
+import pl.zielinski.SimpleLoginAndRegisterApplication.utils.PathProvider;
 
 import java.util.Collection;
+import java.util.UUID;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.enumeration.VerificationType.ACCOUNT;
 import static pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMapper.fromUser;
+import static pl.zielinski.SimpleLoginAndRegisterApplication.utils.PathProvider.getVerificationUrl;
 
 /**
  * @author rafek
@@ -24,11 +31,13 @@ import static pl.zielinski.SimpleLoginAndRegisterApplication.mapper.UserDTOMappe
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository<User> userRepository;
     private final RoleRepository<Role> roleRepository;
     private final SmsService smsService;
+    private final EmailService emailService;
 
     @Override
     public Collection<UserDTO> getUsers() {
@@ -37,7 +46,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO createUser(User user) {
-        return fromUser(userRepository.create(user), roleRepository.getRoleByUserId(user.getId()));
+        String verificationUrl = PathProvider.getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
+        UserDTO userDTO = fromUser(userRepository.create(user, verificationUrl), roleRepository.getRoleByUserId(user.getId()));
+        emailService.sendSimpleMailMessage(userDTO.getEmail(), userDTO.getFirstName(),  verificationUrl);
+        return userDTO;
     }
 
     @Override
@@ -56,7 +68,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO verifyAccountKey(String key) {
+    public UserDTO verifyAccountKey(String key)
+    {
         return fromUser(userRepository.verifyAccountKey(key));
     }
 
@@ -71,4 +84,6 @@ public class UserServiceImpl implements UserService {
     public UserDTO verifyMfaCode(String email, String code) {
         return fromUser(userRepository.verifyMfaCode(email, code));
     }
+
+
 }
