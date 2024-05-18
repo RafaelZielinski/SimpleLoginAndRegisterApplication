@@ -40,6 +40,13 @@ public class SecurityConfiguration {
     private final BCryptPasswordEncoder encoder;
     private final CustomAuthorizationFilter customAuthorizationFilter;
 
+    private final String[] SWAGGER_WHITELIST = {
+            "/swagger-ui/**",
+            "/api-docs/**",
+            "/swagger-resources/**",
+            "/swagger-resources",
+    };
+
     private final String[] PUBLIC_ROUTES = {
             "/users/login/**",
             "/users/register/**",
@@ -55,6 +62,7 @@ public class SecurityConfiguration {
         http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeHttpRequests((authorize) -> authorize
                 .requestMatchers(PUBLIC_ROUTES).permitAll()
+                .requestMatchers(SWAGGER_WHITELIST).permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/**").hasAnyAuthority("DELETE:USER")
                 .anyRequest().authenticated());
         http.exceptionHandling((exceptionalHandler) -> exceptionalHandler
