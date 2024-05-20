@@ -28,6 +28,8 @@ services:
       - postgres
   simpleLoginAndRegister:
     container_name: simplecontainer
+    volumes:
+      - ${HOST_DB_PATH}/application:/var/lib/postgresql/application
     build:
       context: .
       args:
