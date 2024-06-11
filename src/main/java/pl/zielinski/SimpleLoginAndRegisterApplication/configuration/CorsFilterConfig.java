@@ -24,6 +24,7 @@ public class CorsFilterConfig {
 
     @Bean
     public CorsFilter corsFilter() {
+        System.out.println(FRONTEND_URL);
         UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
