@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     container_name: postgres
     volumes:
-      - ${HOST_DB_PATH}:/var/lib/postgresql/data
+      - application:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
@@ -29,12 +29,12 @@ services:
   simpleLoginAndRegister:
     container_name: simplecontainer
     volumes:
-      - ${HOST_DB_PATH}/application:/var/lib/postgresql/application
+      - application:/var/lib/postgresql/backend
     build:
       context: .
       args:
         CONTAINER_PORT: ${CONTAINER_PORT}
-    image: simpleloginandregister:v1
+    image: emryszielinski/simpleloginandregister:0.0.8
     restart: unless-stopped
     env_file:
       - ${ENV_FILE}
@@ -49,3 +49,5 @@ services:
 networks:
   postgres:
     driver: bridge
+volumes:
+  application:
