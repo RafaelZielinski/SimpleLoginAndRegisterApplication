@@ -75,7 +75,9 @@ class UserControllerTest implements UserControllerProvider {
         //then
         mockMvc.perform(get("/users/user/1")
                         .contentType(APPLICATION_JSON)
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(
+                                new UsernamePasswordAuthenticationToken(1L, null,
+                                        List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("User retrieved"))
                 .andExpect(jsonPath("$.data.user.firstName").value("Rafał"))
@@ -91,7 +93,9 @@ class UserControllerTest implements UserControllerProvider {
         //then
         mockMvc.perform(get("/users/user/1")
                         .contentType(APPLICATION_JSON)
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(
+                                new UsernamePasswordAuthenticationToken(1L, null,
+                                        List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("There is no such an user at database exists"));
 
@@ -106,7 +110,9 @@ class UserControllerTest implements UserControllerProvider {
         //then
         mockMvc.perform(get("/users/list")
                         .contentType(APPLICATION_JSON)
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(
+                                new UsernamePasswordAuthenticationToken(1L, null,
+                                        List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("List of users"))
                 .andExpect(jsonPath("$.data.users[0].firstName").value("Rafał"))
@@ -122,7 +128,9 @@ class UserControllerTest implements UserControllerProvider {
         //then
         mockMvc.perform(get("/users/list")
                         .contentType(APPLICATION_JSON)
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(
+                                new UsernamePasswordAuthenticationToken(1L, null,
+                                        List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("List of users"))
                 .andExpect(jsonPath("$.data.users.size()").value(0));
@@ -136,7 +144,9 @@ class UserControllerTest implements UserControllerProvider {
         //when
         mockMvc.perform(get("/users/list")
                         .contentType(APPLICATION_JSON)
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(1L, null, List.of(new SimpleGrantedAuthority("USER"))))))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(
+                                new UsernamePasswordAuthenticationToken(1L, null,
+                                        List.of(new SimpleGrantedAuthority("USER"))))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("There is problem with list of users from database"));
         //then
